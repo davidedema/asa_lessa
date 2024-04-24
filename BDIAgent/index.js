@@ -73,8 +73,7 @@ function agentLoop() {
      */
     if (best_option) {
         myAgent.queue(best_option.desire, ...best_option.args)
-        myAgent.queue('pickup', {});
-        myAgent.queue('go_to', { x: 1, y: 1 }, me)
+        // myAgent.queue('go_to', { x: 1, y: 1 }, me)
     }
 
 

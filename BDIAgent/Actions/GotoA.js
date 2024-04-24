@@ -9,7 +9,6 @@ class GotoA extends Plan {
     }
 
     findPath({ x, y }, grid, me, myAgent){
-        const self = this;
         grid.easystar.findPath(me.x, me.y, x, y, function (path) {
             if (path === null) {
                 console.log("Path was not found ( :[ ).");
@@ -21,6 +20,8 @@ class GotoA extends Plan {
             }
         });
         grid.easystar.calculate();
+        myAgent.queue('pickup', {})
+        // console.log(myAgent.queue)
     }
 
     async execute({ x, y }, grid, me, myAgent) {
