@@ -73,7 +73,6 @@ function agentLoop() {
      */
     if (best_option) {
         myAgent.queue(best_option.desire, ...best_option.args)
-        // myAgent.queue('go_to', { x: 1, y: 1 }, me)
     }
 
 

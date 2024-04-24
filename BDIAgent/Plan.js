@@ -1,3 +1,5 @@
+import Intention from './Intention.js';
+
 class Plan {
 
     stop() {

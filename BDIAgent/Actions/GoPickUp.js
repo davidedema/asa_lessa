@@ -7,8 +7,8 @@ class GoPickUp extends Plan {
         return desire == 'go_pick_up';
     }
 
-    async execute({ x, y }) {
-        await this.subIntention('go_to', { x, y });
+    async execute({ x, y }, grid, me, myAgent) {
+        await this.subIntention('go_to_astar', { x, y }, grid, me, myAgent);
         await client.pickup()
     }
 

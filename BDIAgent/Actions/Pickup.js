@@ -9,6 +9,7 @@ class Pickup extends Plan {
     }
 
     async execute() {
+        console.log('Agent is executing pickup action');
         await client.pickup()
     }
 
