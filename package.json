@@ -1,0 +1,29 @@
+{
+  "name": "asa_lessa",
+  "version": "1.0.0",
+  "description": "Package containing the agents for the ASA course @ Unitn. Developed by: davidedema and mattiarigon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidedema/asa_lessa.git"
+  },
+  "keywords": [
+    "planning",
+    "agents",
+    "javascript"
+  ],
+  "author": "Davide De Martini, Mattia Rigon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidedema/asa_lessa/issues"
+  },
+  "homepage": "https://github.com/davidedema/asa_lessa#readme",
+  "dependencies": {
+    "@unitn-asa/deliveroo-js-client": "^0.0.37",
+    "easystarjs": "^0.4.4",
+    "socket.io-client": "^4.7.5"
+  }
+}
