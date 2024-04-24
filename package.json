@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Package containing the agents for the ASA course @ Unitn. Developed by: davidedema and mattiarigon",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bdi": "node BDIAgent/index.js"
   },
   "repository": {
     "type": "git",
