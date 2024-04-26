@@ -1,9 +1,6 @@
-import { DeliverooApi } from "@unitn-asa/deliveroo-js-client";
 import Agent from "./Agent.js";
 import Grid from "./Grid.js";
 import Me from "./Me.js";
-import Plan from "./Plan.js";
-import Intention from "./Intention.js";
 import client from "./client.js";
 
 
@@ -15,6 +12,8 @@ function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
 
 var grid = undefined;
 
+var seen = new Set();
+
 var me = new Me();
 /**
  * Belief revision function
@@ -24,17 +23,7 @@ client.onYou(({ id, name, x, y, score }) => {
     me.setValues({ id, name, x, y, score });
 })
 
-client.onMap((width, height, map) => {
-    console.log('map', width, height, map);
-})
-
 const parcels = new Map();
-client.onParcelsSensing(async (perceived_parcels) => {
-    for (const p of perceived_parcels) {
-        parcels.set(p.id, p)
-    }
-})
-
 
 const myAgent = new Agent();
 myAgent.intentionLoop();
@@ -43,15 +32,20 @@ myAgent.intentionLoop();
  * BDI loop
  */
 
-function agentLoop() {
-
+function agentLoop(perceived_parcels) {
+    for (const p of perceived_parcels) {
+        parcels.set(p.id, p);
+    }
     /**
      * Options
      */
     const options = [];
     for (const parcel of parcels.values())
-        if (!parcel.carriedBy && me.carring === false)
-            options.push({ desire: 'go_to_astar', args: [parcel, grid, me, myAgent] });
+        if (!parcel.carriedBy && !seen.has(parcel.id)){
+            seen.add(parcel.id);
+            options.push({ desire: 'go_pick_up', args: [parcel, grid.getMap(), me, myAgent] });
+        }
+
 
 
     /**
@@ -62,9 +56,9 @@ function agentLoop() {
     for (const option of options) {
         let current_i = option.desire
         let current_d = distance(option.args[0], me)
-        if (current_i == 'go_to_astar' && current_d < nearest) {
+        if (current_i == 'go_pick_up' && current_d < nearest) {
             best_option = option
-            nearest = distance(option.args[0], me)
+            nearest = current_d
         }
     }
 
@@ -74,19 +68,13 @@ function agentLoop() {
     if (best_option) {
         myAgent.queue(best_option.desire, ...best_option.args)
     }
-
-
 }
-client.onParcelsSensing(agentLoop)
-// client.onAgentsSensing( agentLoop )
-// client.onYou( agentLoop )
+client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels))
 
 client.onMap((width, height, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
-        grid.set(y, x, delivery ? 'O' : '+');
+        grid.set(y, x, delivery ? 1 : 1);
     }
-    grid.easystar.setGrid(grid.getMap());
-    grid.easystar.setAcceptableTiles(['+', 'O']);
 })
 

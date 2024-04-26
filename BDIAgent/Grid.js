@@ -1,17 +1,11 @@
-import  easystar  from "easystarjs";
-
-
 class Grid {
-
     
     #map;
     
     constructor(width, height) {
-        this.easystar = new easystar.js();
         this.width = width
         this.height = height
-        this.#map = Array(width).fill().map(() => Array(height).fill('#'))
-        console.log('map', this.#map);
+        this.#map = Array(width).fill().map(() => Array(height).fill(0));
     }
 
     set(x, y, value) {

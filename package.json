@@ -25,7 +25,6 @@
   "homepage": "https://github.com/davidedema/asa_lessa#readme",
   "dependencies": {
     "@unitn-asa/deliveroo-js-client": "^0.0.37",
-    "easystarjs": "^0.4.4",
     "socket.io-client": "^4.7.5"
   }
 }

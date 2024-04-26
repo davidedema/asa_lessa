@@ -1,14 +1,12 @@
 import BlindMove from "./Actions/BlindMove.js";
 import GoPickUp from "./Actions/GoPickUp.js";
 import GotoA from "./Actions/GotoA.js";
-import Pickup from "./Actions/Pickup.js";
 
 const plans = [];
 
 plans.push(new GoPickUp());
 plans.push(new BlindMove());
 plans.push(new GotoA());
-plans.push(new Pickup());
 
 class Intention extends Promise {
 
@@ -52,7 +50,7 @@ class Intention extends Promise {
                     // console.log('plan', plan, 'succesfully achieved intention', this.#desire, ...this.#args, 'with result', plan_res);
                     return plan_res
                 } catch (error) {
-                    console.log('plan', plan, 'failed while trying to achieve intention', this.#desire, ...this.#args, 'with error', error);
+                    // console.log('plan', plan, 'failed while trying to achieve intention', this.#desire, ...this.#args, 'with error', error);
                 }
             }
         }

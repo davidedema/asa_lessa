@@ -13,7 +13,6 @@ class BlindMove extends Plan {
             let status_x = undefined;
             let status_y = undefined;
 
-            // console.log('me', me, 'xy', x, y);
 
             if (x > me.x)
                 status_x = await client.move('right')
