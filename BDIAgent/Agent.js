@@ -9,6 +9,9 @@ class Agent {
             const intention = this.intention_queue.shift();
             if (intention)
                 await intention.achieve();
+            else
+                this.queue('random_move', {});
+            
             await new Promise(res => setImmediate(res));
         }
     }

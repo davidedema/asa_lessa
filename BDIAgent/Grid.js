@@ -1,6 +1,10 @@
 class Grid {
-    
+    /**
+     * MAP SE 1 deliver, 2 normale 0 muro
+     */
+
     #map;
+    #deliverPoints = [];    
     
     constructor(width, height) {
         this.width = width
@@ -9,7 +13,10 @@ class Grid {
     }
 
     set(x, y, value) {
-        this.#map[x][y] = value;
+        this.#map[y][x] = value;
+        if (value == 1) {
+            this.#deliverPoints.push({ x: y, y: x});
+        }
     }
 
     get(x, y) {
@@ -17,7 +24,19 @@ class Grid {
     }
 
     getMap() {
-        return this.#map;
+        const grid = this.#map;
+        grid.forEach((row, x) => {
+            row.forEach((cell, y) => {
+                if (cell != 0) {
+                    grid[x][y] = 1;
+                }
+            })
+        })
+        return grid;
+    }
+
+    getDeliverPoints() {
+        return this.#deliverPoints;
     }
 
     print() {

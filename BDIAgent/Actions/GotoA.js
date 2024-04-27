@@ -8,7 +8,7 @@ class GotoA extends Plan {
         return desire == 'go_to_astar';
     }
 
-    async execute({ x, y }, grid, me, myAgent) {
+    async execute({ x, y }, grid, me) {
         const graph = new Graph(grid);
         const start = graph.grid[me.x][me.y];
         const end = graph.grid[x][y];
