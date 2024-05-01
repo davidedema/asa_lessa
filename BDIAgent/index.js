@@ -2,6 +2,7 @@ import Agent from "./Agent.js";
 import Grid from "./Grid.js";
 import Me from "./Me.js";
 import client from "./client.js";
+import IntentionRevisionReplaceAgent from "./IntentionRevision.js";
 
 
 function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
@@ -29,8 +30,8 @@ const parcels = new Map();
 
 const perceivedAgents = new Map();
 
-const myAgent = new Agent();
-myAgent.intentionLoop();
+const myAgent = new IntentionRevisionReplaceAgent();
+myAgent.loop();
 
 /**
  * BDI loop
@@ -71,8 +72,8 @@ function agentLoop(perceived_parcels) {
     */
    if (best_option) {
        seenParcels.add(best_option.args[0].id);
-       myAgent.queue(best_option.desire, ...best_option.args)
-       myAgent.queue('go_put_down', grid.getMap(), me, grid.getDeliverPoints());
+       myAgent.push(best_option.desire, ...best_option.args)
+       myAgent.push('go_put_down', grid.getMap(), me, grid.getDeliverPoints());
     }
     
 }
@@ -93,7 +94,7 @@ function agentPerception(perceived_agents) {
     
     
     
-    console.log(perceivedAgents.values())
+    // console.log(perceivedAgents.values())
 }
 
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));

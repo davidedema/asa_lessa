@@ -17,7 +17,7 @@ class GotoA extends Plan {
         for (let i = 0; i < result.length; i++) {
             x = result[i].x;
             y = result[i].y;
-            console.log('moving to', x, y);
+            // console.log('moving to', x, y);
             let status_x = undefined;
             let status_y = undefined;
 
@@ -48,8 +48,8 @@ class GotoA extends Plan {
             }
 
             if (!status_x && !status_y) {
-                console.log('stucked')
-                break;
+                console.log('stucked');
+                throw ['stucked', x, y];
             } else if (me.x == x && me.y == y) {
                 // console.log('target reached')
             }
