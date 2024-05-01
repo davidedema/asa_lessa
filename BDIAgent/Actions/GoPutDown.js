@@ -13,7 +13,6 @@ class GoPutDown extends Plan {
         const start = graph.grid[x][y];
         const end = graph.grid[deliveryPoints[0].x][deliveryPoints[0].y];
         let closestDeliveryPoint = astar.search(graph, start, end);
-        deliveryPoints.shift();
         for (const deliveryPoint of deliveryPoints) {
             const end = graph.grid[deliveryPoint.x][deliveryPoint.y];
             const result = astar.search(graph, start, end);
@@ -25,7 +24,7 @@ class GoPutDown extends Plan {
     }
 
     async execute(grid, me, deliveryPoints) {
-        const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid, deliveryPoints);
+        const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
         await this.subIntention('go_to_astar', deliverPoint, grid, me);
         await client.putdown()
     }

@@ -48,7 +48,7 @@ function agentLoop(perceived_parcels) {
    const options = [];
    for (const parcel of parcels.values())
    if (!parcel.carriedBy && !seenParcels.has(parcel.id)) {
-       options.push({ desire: 'go_pick_up', args: [parcel, grid.getMap(), me] });
+       options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
     }
     
     
@@ -73,13 +73,14 @@ function agentLoop(perceived_parcels) {
    if (best_option) {
        seenParcels.add(best_option.args[0].id);
        myAgent.push(best_option.desire, ...best_option.args)
-       myAgent.push('go_put_down', grid.getMap(), me, grid.getDeliverPoints());
+       myAgent.push('go_put_down', grid, me, grid.getDeliverPoints());
     }
+
     
 }
 
 function agentPerception(perceived_agents) {
-    const timeSeen = Date.now() - start;
+    const timeSeen = Date.now() ;
     
     perceivedAgents.forEach((value, key) => {
         value.isNear = false;
@@ -90,11 +91,12 @@ function agentPerception(perceived_agents) {
     
     for (const agent of perceived_agents) {
         perceivedAgents.set(agent.id, {agent, timeSeen, isNear: true});
+        grid.setAgent(agent.x,agent.y,timeSeen)
     }
     
+    console.log(perceivedAgents.values())
+
     
-    
-    // console.log(perceivedAgents.values())
 }
 
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));
@@ -105,7 +107,7 @@ client.onAgentsSensing(async (perceived_agents) => agentPerception(perceived_age
 client.onMap((width, height, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
-        grid.set(y, x, delivery ? 1 : 2);
+        grid.set(y, x, delivery ? 1 : 2);   
     }
 });
 

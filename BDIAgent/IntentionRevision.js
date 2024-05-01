@@ -29,7 +29,8 @@ class IntentionRevisionAgent {
                 await intention.achieve()
                 // Catch eventual error and continue
                 .catch( error => {
-                    console.log( 'Failed intention', ...intention.predicate, 'with error:', error )
+
+                    wconsole.log( 'Failed intention',intention.predicate, 'with error:', error )
                 } );
 
                 // Remove from the queue

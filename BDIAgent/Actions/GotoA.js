@@ -9,10 +9,11 @@ class GotoA extends Plan {
     }
 
     async execute({ x, y }, grid, me) {
-        const graph = new Graph(grid);
+        const graph = new Graph(grid.getMap());
         const start = graph.grid[me.x][me.y];
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
+        // console.log('result', result);
 
         for (let i = 0; i < result.length; i++) {
             x = result[i].x;
@@ -49,6 +50,7 @@ class GotoA extends Plan {
 
             if (!status_x && !status_y) {
                 console.log('stucked');
+                
                 throw ['stucked', x, y];
             } else if (me.x == x && me.y == y) {
                 // console.log('target reached')

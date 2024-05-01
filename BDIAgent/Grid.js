@@ -5,6 +5,7 @@ class Grid {
 
     #map;
     #deliverPoints = [];    
+    #agentMap = [];
     
     constructor(width, height) {
         this.width = width
@@ -19,19 +20,40 @@ class Grid {
         }
     }
 
+    setAgent(x, y,time) {
+        this.#agentMap.push({ x: x, y: y, time: time});
+    }
+
     get(x, y) {
         return this.#map[x][y];
     }
 
     getMap() {
+
+
+
+        // Filter and remove agents that haven't been seen for 10 seconds
+        this.#agentMap = this.#agentMap.filter(agent => {
+            return agent.time >= Date.now() - 10000;
+        });
+
+        // For each agent, update the cell weight
+
+
         const grid = this.#map;
         grid.forEach((row, x) => {
             row.forEach((cell, y) => {
                 if (cell != 0) {
-                    grid[x][y] = 1;
-                }
+                        grid[x][y] = 1;
+                    }
             })
         })
+
+        this.#agentMap.forEach(agent => {
+            grid[agent.x][agent.y] = Math.max((Date.now() - agent.time)/1000,1) ;
+        });
+
+
         return grid;
     }
 
