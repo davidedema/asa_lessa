@@ -94,7 +94,7 @@ function agentPerception(perceived_agents) {
         grid.setAgent(agent.x,agent.y,timeSeen)
     }
     
-    console.log(perceivedAgents.values())
+    // console.log(perceivedAgents.values())
 
     
 }
