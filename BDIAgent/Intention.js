@@ -3,6 +3,7 @@ import GoPickUp from "./Actions/GoPickUp.js";
 import GotoA from "./Actions/GotoA.js";
 import GoPutDown from "./Actions/GoPutDown.js";
 import RandomMove from "./Actions/RandomMove.js";
+import {astar, Graph} from './astar.js';
 
 const plans = [];
 
@@ -104,11 +105,30 @@ class Intention {
         this.#args = args;
     }
 
+    get_args () {
+        return this.#args;
+    }
+
+
     log ( ...args ) {
         if ( this.#parent && this.#parent.log )
             this.#parent.log( '\t', ...args )
         else
             console.log( ...args )
+    }
+
+    get_utility () {
+        const parcel = this.#args[0];
+        const me = this.#args[2];
+        const grid = this.#args[1];
+        const graph = new Graph(grid.getMap());
+        const start = graph.grid[me.x][me.y];
+        const end = graph.grid[parcel.x][parcel.y];
+        const result = astar.search(graph, start, end);
+        const path_length = result.length;
+        const utility = parcel.reward - path_length;
+        return utility;
+        console.log('get_utility', this.#predicate);
     }
 
     #started = false;

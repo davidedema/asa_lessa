@@ -55,7 +55,7 @@ class Grid {
                 throw new Error("NEGATIVE TIME")
             }
             grid[agent.x][agent.y] = Date.now() - agent.time + 1 ;
-            console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
+            // console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
         });
 
 

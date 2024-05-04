@@ -2,7 +2,7 @@ import Agent from "./Agent.js";
 import Grid from "./Grid.js";
 import Me from "./Me.js";
 import client from "./client.js";
-import IntentionRevisionReplaceAgent from "./IntentionRevision.js";
+import IntentionRevisionRevise from "./IntentionRevision.js";
 
 
 function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
@@ -30,7 +30,7 @@ const parcels = new Map();
 
 const perceivedAgents = new Map();
 
-const myAgent = new IntentionRevisionReplaceAgent();
+const myAgent = new IntentionRevisionRevise();
 myAgent.loop();
 
 /**
@@ -45,18 +45,19 @@ function agentLoop(perceived_parcels) {
     /**
      * Options
     */
-   const options = [];
-   for (const parcel of parcels.values())
-   if (!parcel.carriedBy && !seenParcels.has(parcel.id)) {
-       options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
+    const options = [];
+    const parcels_for_pickup = myAgent.get_parcerls_to_pickup();
+    for (const parcel of parcels.values()) {
+        if (!parcel.carriedBy && !parcels_for_pickup.includes(parcel.id)){
+            options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
+        }
     }
-    
-    
-    
+
+
     /**
      * Select best intention
     */
-   let best_option;
+    let best_option;
     let nearest = Number.MAX_VALUE;
     for (const option of options) {
         let current_i = option.desire
@@ -66,37 +67,37 @@ function agentLoop(perceived_parcels) {
             nearest = current_d
         }
     }
-    
+
     /**
      * Revise/queue intention 
     */
-   if (best_option) {
-       seenParcels.add(best_option.args[0].id);
-       myAgent.push(best_option.desire, ...best_option.args)
-       myAgent.push('go_put_down', grid, me, grid.getDeliverPoints());
+    if (best_option) {
+        seenParcels.add(best_option.args[0].id);
+        myAgent.push(best_option.desire, ...best_option.args)
+        myAgent.push('go_put_down', grid, me, grid.getDeliverPoints());
     }
 
-    
+
 }
 
 function agentPerception(perceived_agents) {
-    const timeSeen = Date.now() ;
-    
+    const timeSeen = Date.now();
+
     perceivedAgents.forEach((value, key) => {
         value.isNear = false;
         if (timeSeen - value.timeSeen > 20000) {
             perceivedAgents.delete(key);
         }
     });
-    
+
     for (const agent of perceived_agents) {
-        perceivedAgents.set(agent.id, {agent, timeSeen, isNear: true});
-        grid.setAgent(agent.x,agent.y,timeSeen)
+        perceivedAgents.set(agent.id, { agent, timeSeen, isNear: true });
+        grid.setAgent(agent.x, agent.y, timeSeen)
     }
-    
+
     // console.log(perceivedAgents.values())
 
-    
+
 }
 
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));
@@ -107,7 +108,7 @@ client.onAgentsSensing(async (perceived_agents) => agentPerception(perceived_age
 client.onMap((width, height, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
-        grid.set(y, x, delivery ? 1 : 2);   
+        grid.set(y, x, delivery ? 1 : 2);
     }
 });
 
