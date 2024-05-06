@@ -130,7 +130,7 @@ class Intention {
         }else {
             start = graph.grid[me.x][me.y];
         }        
-        const end = graph.grid[parcel.x][parcel.y];
+        const end = graph.grid[parseInt(parcel.x)][parseInt(parcel.y)];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
         const utility = parcel.reward - path_length;

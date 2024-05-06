@@ -46,9 +46,8 @@ function agentLoop(perceived_parcels) {
      * Options
     */
     const options = [];
-    const parcels_for_pickup = myAgent.get_parcerls_to_pickup();
-    for (const parcel of parcels.values()) {
-        if (!parcel.carriedBy && !parcels_for_pickup.includes(parcel.id)){
+    for (const parcel of parcels.values()){
+        if (!parcel.carriedBy && !seenParcels.has(parcel.id)) {
             options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
         }
     }
@@ -95,7 +94,7 @@ function agentPerception(perceived_agents) {
         grid.setAgent(agent.x, agent.y, timeSeen)
     }
 
-    // console.log(perceivedAgents.values())
+    console.log(perceivedAgents.values())
 
 
 }

@@ -1,4 +1,9 @@
 import Intention from "./Intention.js";
+import client from "./client.js";
+
+const computeManhattanDistance = (start, end) => {
+    return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
+}
 
 class IntentionRevisionAgent {
 
@@ -24,6 +29,16 @@ class IntentionRevisionAgent {
             }
         }
         return parcels
+    }
+    remove(parcel) {
+        this.intention_queue = this.intention_queue.filter(intention => {
+            if (intention.predicate == 'go_pick_up') {
+                const args = intention.get_args();
+                if (args[0] && args[0].id) {
+                    return args[0].id !== parcel.id;
+                }
+            }
+        });
     }
 
     order_intentions() {
@@ -62,7 +77,7 @@ class IntentionRevisionAgent {
         let _start = { x: me.x, y: me.y };
         let j = 0;
         for (let intention of ordered_intentions) {
-           
+
             let intention_utility = intention.get_utility(_start = { x: _start.x, y: _start.y });
             let utility = intention_utility['utility'];
             let path_length = intention_utility['path_length'];
@@ -74,9 +89,9 @@ class IntentionRevisionAgent {
                 break;
             }
             expected_reward += added_reward;
-            if(intention){
+            if (intention) {
                 _start = intention.get_args()[0];
-            }else{
+            } else {
                 console.log('intention is undefined');
             }
             j++;
