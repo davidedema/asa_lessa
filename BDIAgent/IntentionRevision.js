@@ -48,8 +48,14 @@ class IntentionRevisionAgent {
         if (this.intention_queue.length == 0) {
             return new Intention(this, 'random_move');
         }
-
-        const go_put_down_intention = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up')[0];
+        
+        const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_put_down');
+        if (go_put_down_intentions.length > 0) {
+            var go_put_down_intention = go_put_down_intentions[0];
+        }
+        else {
+            var go_put_down_intention = undefined;
+        }
         const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
 
         const me = this.intention_queue[0].get_args()[2];
@@ -69,11 +75,13 @@ class IntentionRevisionAgent {
                 this.intention_queue = this.intention_queue.filter(intention => intention !== best_intention);
                 return best_intention;
             } else if (me.number_of_parcels_carried > 0) {
+                this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
                 return go_put_down_intention;
             } else {
                 return new Intention(this, 'random_move');
             }
         } else if (me.number_of_parcels_carried > 0) {
+            this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
             return go_put_down_intention;
         } else {
             return new Intention(this, 'random_move');

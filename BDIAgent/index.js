@@ -3,6 +3,7 @@ import Grid from "./Grid.js";
 import Me from "./Me.js";
 import client from "./client.js";
 import IntentionRevisionRevise from "./IntentionRevision.js";
+import config from "./config.js";   
 
 
 function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
@@ -14,8 +15,6 @@ function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
 var grid = undefined;
 
 const start = Date.now();
-
-var seenParcels = new Set();
 
 var me = new Me();
 /**
@@ -45,9 +44,10 @@ function agentLoop(perceived_parcels) {
     /**
      * Options
     */
+    const seenParcels = myAgent.get_parcerls_to_pickup();
     const options = [];
     for (const parcel of parcels.values()){
-        if (!parcel.carriedBy && !seenParcels.has(parcel.id)) {
+        if (!parcel.carriedBy && !seenParcels.includes(parcel.id)) {
             options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
         }
     }
@@ -71,7 +71,6 @@ function agentLoop(perceived_parcels) {
      * Revise/queue intention 
     */
     if (best_option) {
-        seenParcels.add(best_option.args[0].id);
         myAgent.push(best_option.desire, ...best_option.args)
         myAgent.push('go_put_down', grid, grid.getDeliverPoints(), me);
     }

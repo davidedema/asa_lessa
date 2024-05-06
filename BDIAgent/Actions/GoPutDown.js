@@ -28,7 +28,6 @@ class GoPutDown extends Plan {
         await this.subIntention('go_to_astar', deliverPoint, grid, me);
         await client.putdown()
         me.number_of_parcels_carried = 0;
-        console.log('put down', me.number_of_parcels_carried);
     }
 
 }

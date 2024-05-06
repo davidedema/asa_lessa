@@ -4,8 +4,14 @@ import GotoA from "./Actions/GotoA.js";
 import GoPutDown from "./Actions/GoPutDown.js";
 import RandomMove from "./Actions/RandomMove.js";
 import {astar, Graph} from './astar.js';
+import configPromise from './config.js';   
 
 const plans = [];
+
+let config;
+configPromise.then((conf) => {
+    config = conf;
+});
 
 plans.push(new GoPickUp());
 plans.push(new BlindMove());
@@ -138,7 +144,7 @@ class Intention {
         const end = graph.grid[parseInt(parcel.x)][parseInt(parcel.y)];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
-        const utility = parcel.reward - num_parcels_carried * path_length;
+        const utility = parcel.reward - num_parcels_carried * path_length * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
         this.#utility = utility;
         return {utility, path_length};
         console.log('get_utility', this.#predicate);
