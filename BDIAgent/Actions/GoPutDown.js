@@ -27,6 +27,8 @@ class GoPutDown extends Plan {
         const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
         await this.subIntention('go_to_astar', deliverPoint, grid, me);
         await client.putdown()
+        me.number_of_parcels_carried = 0;
+        console.log('put down', me.number_of_parcels_carried);
     }
 
 }

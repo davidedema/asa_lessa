@@ -54,7 +54,7 @@ class Grid {
             if( Date.now() - agent.time + 1 < 0){
                 throw new Error("NEGATIVE TIME")
             }
-            grid[agent.x][agent.y] = Date.now() - agent.time + 1 ;
+            grid[parseInt(agent.x)][parseInt(agent.x)] = Date.now() - agent.time + 1;
             // console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
         });
 

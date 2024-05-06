@@ -78,6 +78,7 @@ class Intention {
     get stopped () {
         return this.#stopped;
     }
+
     stop () {
         this.log( 'stop intention', ...this.#predicate );
         this.#stopped = true;
@@ -98,6 +99,7 @@ class Intention {
     }
     #predicate;
     #args;
+    #utility;
 
     constructor ( parent, predicate , ...args) {
         this.#parent = parent;
@@ -117,17 +119,23 @@ class Intention {
             console.log( ...args )
     }
 
-    get_utility () {
+    get_utility (_start = null) {
         const parcel = this.#args[0];
         const me = this.#args[2];
         const grid = this.#args[1];
         const graph = new Graph(grid.getMap());
-        const start = graph.grid[me.x][me.y];
+        let start = null;
+        if(_start){
+            start = graph.grid[_start.x][_start.y]
+        }else {
+            start = graph.grid[me.x][me.y];
+        }        
         const end = graph.grid[parcel.x][parcel.y];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
         const utility = parcel.reward - path_length;
-        return utility;
+        this.#utility = utility;
+        return {utility, path_length};
         console.log('get_utility', this.#predicate);
     }
 

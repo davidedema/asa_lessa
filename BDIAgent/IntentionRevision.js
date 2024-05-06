@@ -35,6 +35,8 @@ class IntentionRevisionAgent {
         }
 
         // Filter only the go_pick_up intentions
+        const go_put_down_intention = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up')[0];
+
         const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
         ordered_intentions.push(...go_pick_up_intentions);
 
@@ -45,24 +47,57 @@ class IntentionRevisionAgent {
         if (go_pick_up_intentions.length > 0) {
             // Sort intentions by utility
             ordered_intentions = go_pick_up_intentions.sort((a, b) => {
-                const utilityA = a.get_utility();
-                const utilityB = b.get_utility();
+                const utilityA = a.get_utility()['utility'];
+                const utilityB = b.get_utility()['utility'];
                 return utilityB - utilityA;
             });
         }
+        let expected_reward = 0;
+        if (ordered_intentions.length == 0) {
+            return this.intention_queue;
+        }
+        const me = ordered_intentions[0].get_args()[2];
+        let i = me.number_of_parcels_carried;
+        console.log('i', i);
+        let _start = { x: me.x, y: me.y };
+        let j = 0;
+        for (let intention of ordered_intentions) {
+           
+            let intention_utility = intention.get_utility(_start = { x: _start.x, y: _start.y });
+            let utility = intention_utility['utility'];
+            let path_length = intention_utility['path_length'];
+            let added_reward = utility - i * path_length + path_length;
+            if (added_reward < 0) {
+                // ordered_intentions = ordered_intentions.slice(0, i);
+                ordered_intentions.splice(0, j, go_put_down_intention);
+                // me.number_of_parcels_carried = 0;
+                break;
+            }
+            expected_reward += added_reward;
+            if(intention){
+                _start = intention.get_args()[0];
+            }else{
+                console.log('intention is undefined');
+            }
+            j++;
+        }
 
 
-        const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up');
-        ordered_intentions.push(...go_put_down_intentions);
+        ordered_intentions.push(go_put_down_intention);
         this.intention_queue = ordered_intentions;
     }
 
     async loop() {
         while (true) {
             // Consumes intention_queue if not empty
+            const intention = this.intention_queue[0];
+
+            // if (intention && intention.predicate != 'go_put_down') {
             this.order_intentions()
+            // }
+
             if (this.intention_queue.length > 0) {
-                console.log('intentionRevision.loop', this.intention_queue.map(i => i.predicate));
+                // console.log('intentionRevision.loop', this.intention_queue.map(i => i.predicate));
 
                 // Current intention
                 const intention = this.intention_queue[0];
