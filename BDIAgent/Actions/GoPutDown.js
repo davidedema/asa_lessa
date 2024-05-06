@@ -23,7 +23,7 @@ class GoPutDown extends Plan {
         return closestDeliveryPoint[closestDeliveryPoint.length - 1];
     }
 
-    async execute(grid, me, deliveryPoints) {
+    async execute(grid, deliveryPoints, me) {
         const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
         await this.subIntention('go_to_astar', deliverPoint, grid, me);
         await client.putdown()

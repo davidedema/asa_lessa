@@ -97,6 +97,11 @@ class Intention {
     get predicate () {
         return this.#predicate;
     }
+
+    get utility () {
+        return this.#utility;
+    }
+
     #predicate;
     #args;
     #utility;
@@ -119,7 +124,7 @@ class Intention {
             console.log( ...args )
     }
 
-    get_utility (_start = null) {
+    get_utility (num_parcels_carried, _start = null) {
         const parcel = this.#args[0];
         const me = this.#args[2];
         const grid = this.#args[1];
@@ -128,12 +133,12 @@ class Intention {
         if(_start){
             start = graph.grid[_start.x][_start.y]
         }else {
-            start = graph.grid[me.x][me.y];
+            start = graph.grid[parseInt(me.x)][parseInt(me.y)];
         }        
         const end = graph.grid[parseInt(parcel.x)][parseInt(parcel.y)];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
-        const utility = parcel.reward - path_length;
+        const utility = parcel.reward - num_parcels_carried * path_length;
         this.#utility = utility;
         return {utility, path_length};
         console.log('get_utility', this.#predicate);

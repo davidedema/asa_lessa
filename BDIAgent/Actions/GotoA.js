@@ -10,7 +10,7 @@ class GotoA extends Plan {
 
     async execute({ x, y }, grid, me) {
         const graph = new Graph(grid.getMap());
-        const start = graph.grid[me.x][me.y];
+        const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
         // console.log('result', result);

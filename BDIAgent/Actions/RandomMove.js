@@ -2,7 +2,7 @@ import Plan from "../Plan.js";
 import client from "../client.js";
 import { astar, Graph } from "../astar.js";
 
-class GoPutDown extends Plan {
+class RandomMove extends Plan {
 
     isApplicableTo(desire) {
         return desire == 'random_move';
@@ -10,10 +10,11 @@ class GoPutDown extends Plan {
 
     async execute() {
         const directions = ['up', 'down', 'left', 'right'];
+        // check possible options
         const direction = directions[Math.floor(Math.random() * directions.length)];
         await client.move(direction);
     }
 
 }
 
-export default GoPutDown;
+export default RandomMove;

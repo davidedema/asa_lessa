@@ -73,7 +73,7 @@ function agentLoop(perceived_parcels) {
     if (best_option) {
         seenParcels.add(best_option.args[0].id);
         myAgent.push(best_option.desire, ...best_option.args)
-        myAgent.push('go_put_down', grid, me, grid.getDeliverPoints());
+        myAgent.push('go_put_down', grid, grid.getDeliverPoints(), me);
     }
 
 
@@ -94,7 +94,7 @@ function agentPerception(perceived_agents) {
         grid.setAgent(agent.x, agent.y, timeSeen)
     }
 
-    console.log(perceivedAgents.values())
+    // console.log(perceivedAgents.values())
 
 
 }
