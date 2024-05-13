@@ -144,7 +144,17 @@ class Intention {
         const end = graph.grid[parseInt(parcel.x)][parseInt(parcel.y)];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
-        const utility = parcel.reward - num_parcels_carried * path_length * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
+        let decad = parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1));
+        if (decad == 0) {
+            decad = 1;
+        }
+        if (config['PARCEL_DECADING_INTERVAL'] == 'infinite'){
+            decad = 1;
+        }
+        // console.log('decad', decad);
+
+
+        const utility = parcel.reward - num_parcels_carried * path_length *decad ;// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
         this.#utility = utility;
         return {utility, path_length};
         console.log('get_utility', this.#predicate);
