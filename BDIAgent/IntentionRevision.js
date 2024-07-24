@@ -60,11 +60,37 @@ class IntentionRevisionAgent {
         
         const me = this.intention_queue[0].get_args()[2];
         // Check if the parcel is still there and if the reward is still valid
+
+
+        console.log("parcels carried: ", me.number_of_parcels_carried);
+
         const go_pick_up_intentions = this.intention_queue.filter(intention => {
             if (intention.predicate === 'go_pick_up') {
                 let time_now = Date.now();
                 let parcel = intention.get_args()[0];
                 if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
+                    // parcel expired
+                    return false;
+                }
+
+                // TODO sicuro si può migliorare questa parte
+                // valid parcel
+                // get the current reward
+                let reward = Math.floor((parcel.time + parcel.reward * 1000 - time_now) / 1000);
+                parcel.reward = reward;
+                // for now we are not interested
+                if (reward <= 3) {
+                    return false;
+                }
+                // distance from the parcel
+                let distance = computeManhattanDistance({ x: me.x, y: me.y }, parcel);
+                
+                console.log('distance', distance);
+                console.log('reward', reward);
+
+                // if the distance is too far we are not interested
+                // distance / 2 cause we move at 2 cells per second
+                if ( (distance / 2) > reward) {
                     return false;
                 }
                 return true;
@@ -178,17 +204,17 @@ class IntentionRevisionAgent {
     async loop() {
         while (true) {
 
-            // check current intentions
-
-
             // Consumes intention_queue if not empty
             const intention = this.select_best_intention();
+
+            // if intention go_put_down but I have no parcels, skip
+
 
             // if (intention && intention.predicate != 'go_put_down') {
             // }
 
             if (intention) {
-                console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
+                // console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
                 // console.log('intentionRevision.loop', this.intention_queue.map(i => i.predicate));
 
                 // Current intention
