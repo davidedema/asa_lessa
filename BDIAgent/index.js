@@ -43,6 +43,16 @@ function agentLoop(perceived_parcels) {
         p.time = time;
         parcels.set(p.id, p);
     }
+
+    // update parcels carried
+    let i = 0;
+    for (const p of perceived_parcels) {
+        if (p.carriedBy == me.id) {
+            i++;
+        } 
+    }
+    me._number_of_parcels_carried = i;
+    console.log('number of parcels carried', me._number_of_parcels_carried)
     /**
      * Options
     */

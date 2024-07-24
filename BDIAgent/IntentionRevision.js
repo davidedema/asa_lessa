@@ -59,11 +59,9 @@ class IntentionRevisionAgent {
         // const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
         
         const me = this.intention_queue[0].get_args()[2];
+        
+        
         // Check if the parcel is still there and if the reward is still valid
-
-
-        console.log("parcels carried: ", me.number_of_parcels_carried);
-
         const go_pick_up_intentions = this.intention_queue.filter(intention => {
             if (intention.predicate === 'go_pick_up') {
                 let time_now = Date.now();
@@ -96,21 +94,6 @@ class IntentionRevisionAgent {
                 return true;
             }
         });
-        
-        // //check with time if the parcel is still there
-        // let time_now = Date.now();
-        // for (let intention of go_pick_up_intentions) {
-        //     let parcel = intention.get_args()[0];
-        //     if (parcel.time + parcel.reward * 1000 < time_now) {
-        //         // delete the intention from the queue
-        //         this.intention_queue = this.intention_queue.filter(intention => intention !== intention);
-        //         console.log("deleted intention: ", intention.get_predicate(), intention.get_args()[0]);
-
-        //         // var sec = (parcel.time + parcel.reward * 1000 - time_now) / 1000;
-        //         // console.log("reward: ", sec)
-        //     }
-        // }
-
 
         if (go_pick_up_intentions.length > 0) {
             // Sort intentions by utility
@@ -140,74 +123,74 @@ class IntentionRevisionAgent {
         }
     }
 
-    order_intentions() {
-        // Sort intentions by priority
-        let ordered_intentions = new Array();
 
-        if (this.intention_queue.length == 0) {
-            return;
-        }
+    //? NOW IS NOT USED, WHAT IS THE PURPOSE OF THIS FUNCTION
+    // order_intentions() {
+    //     // Sort intentions by priority
+    //     let ordered_intentions = new Array();
 
-        // Filter only the go_pick_up intentions
-        const go_put_down_intention = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up')[0];
+    //     if (this.intention_queue.length == 0) {
+    //         return;
+    //     }
 
-        const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
-        ordered_intentions.push(...go_pick_up_intentions);
+    //     // Filter only the go_pick_up intentions
+    //     const go_put_down_intention = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up')[0];
 
-        // idea: o prendo un nuovo pacchetto o lascio quelli che ho
-        // finchè reisco ad aumentare il reward prendo pacchetti
-        // altriementi lascio
+    //     const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
+    //     ordered_intentions.push(...go_pick_up_intentions);
 
-        if (go_pick_up_intentions.length > 0) {
-            // Sort intentions by utility
-            ordered_intentions = go_pick_up_intentions.sort((a, b) => {
-                const utilityA = a.get_utility()['utility'];
-                const utilityB = b.get_utility()['utility'];
-                return utilityB - utilityA;
-            });
-        }
-        let expected_reward = 0;
-        if (ordered_intentions.length == 0) {
-            return this.intention_queue;
-        }
-        const me = ordered_intentions[0].get_args()[2];
-        let i = me.number_of_parcels_carried;
-        console.log('i', i);
-        let _start = { x: me.x, y: me.y };
-        let j = 0;
-        for (let intention of ordered_intentions) {
+    //     // idea: o prendo un nuovo pacchetto o lascio quelli che ho
+    //     // finchè reisco ad aumentare il reward prendo pacchetti
+    //     // altriementi lascio
 
-            let intention_utility = intention.get_utility(_start = { x: _start.x, y: _start.y });
-            let utility = intention_utility['utility'];
-            let path_length = intention_utility['path_length'];
-            let added_reward = utility - i * path_length + path_length;
-            if (added_reward < 0) {
-                // ordered_intentions = ordered_intentions.slice(0, i);
-                ordered_intentions.splice(0, j, go_put_down_intention);
-                // me.number_of_parcels_carried = 0;
-                break;
-            }
-            expected_reward += added_reward;
-            if (intention) {
-                _start = intention.get_args()[0];
-            } else {
-                console.log('intention is undefined');
-            }
-            j++;
-        }
+    //     if (go_pick_up_intentions.length > 0) {
+    //         // Sort intentions by utility
+    //         ordered_intentions = go_pick_up_intentions.sort((a, b) => {
+    //             const utilityA = a.get_utility()['utility'];
+    //             const utilityB = b.get_utility()['utility'];
+    //             return utilityB - utilityA;
+    //         });
+    //     }
+    //     let expected_reward = 0;
+    //     if (ordered_intentions.length == 0) {
+    //         return this.intention_queue;
+    //     }
+    //     const me = ordered_intentions[0].get_args()[2];
+    //     let i = me.number_of_parcels_carried;
+    //     console.log('i', i);
+    //     let _start = { x: me.x, y: me.y };
+    //     let j = 0;
+    //     for (let intention of ordered_intentions) {
+
+    //         let intention_utility = intention.get_utility(_start = { x: _start.x, y: _start.y });
+    //         let utility = intention_utility['utility'];
+    //         let path_length = intention_utility['path_length'];
+    //         let added_reward = utility - i * path_length + path_length;
+    //         if (added_reward < 0) {
+    //             // ordered_intentions = ordered_intentions.slice(0, i);
+    //             ordered_intentions.splice(0, j, go_put_down_intention);
+    //             // me.number_of_parcels_carried = 0;
+    //             break;
+    //         }
+    //         expected_reward += added_reward;
+    //         if (intention) {
+    //             _start = intention.get_args()[0];
+    //         } else {
+    //             console.log('intention is undefined');
+    //         }
+    //         j++;
+    //     }
 
 
-        ordered_intentions.push(go_put_down_intention);
-        this.intention_queue = ordered_intentions;
-    }
+    //     ordered_intentions.push(go_put_down_intention);
+    //     this.intention_queue = ordered_intentions;
+    // }
 
     async loop() {
         while (true) {
 
             // Consumes intention_queue if not empty
             const intention = this.select_best_intention();
-
-            // if intention go_put_down but I have no parcels, skip
 
 
             // if (intention && intention.predicate != 'go_put_down') {

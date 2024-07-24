@@ -12,7 +12,6 @@ class GoPickUp extends Plan {
         await client.pickup()
         
         const numberOfParcelsCarried = me._number_of_parcels_carried +1;
-        console.log(numberOfParcelsCarried);
         me.number_of_parcels_carried = numberOfParcelsCarried;
     }
 
