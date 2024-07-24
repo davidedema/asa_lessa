@@ -93,6 +93,7 @@ class IntentionRevisionAgent {
                 }
                 return true;
             }
+            return false;
         });
 
         if (go_pick_up_intentions.length > 0) {
