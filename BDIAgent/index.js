@@ -38,7 +38,9 @@ myAgent.loop();
 
 function agentLoop(perceived_parcels) {
     if (perceived_parcels.length == 0) return;
+    let time = Date.now();
     for (const p of perceived_parcels) {
+        p.time = time;
         parcels.set(p.id, p);
     }
     /**
@@ -107,6 +109,19 @@ client.onMap((width, height, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
         grid.set(y, x, delivery ? 1 : 2);
+    }
+});
+
+
+client.onConfig((config) => {
+    if (config.PARCEL_DECADING_INTERVAL != 'infinite'){
+        // from string to int
+        var decay = parseInt(config.PARCEL_DECADING_INTERVAL.slice(0,-1));
+        me.decay = decay;
+    }
+    // TODO change this one
+    else {
+        me.decay = 99999999;
     }
 });
 

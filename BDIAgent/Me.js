@@ -7,6 +7,7 @@ class Me {
         this.score = undefined;
         this.carring = false;
         this._number_of_parcels_carried = 0;
+        this.decay = undefined;
     }
 
     get number_of_parcels_carried() {

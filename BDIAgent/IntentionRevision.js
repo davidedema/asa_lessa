@@ -56,9 +56,35 @@ class IntentionRevisionAgent {
         else {
             var go_put_down_intention = undefined;
         }
-        const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
-
+        // const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
+        
         const me = this.intention_queue[0].get_args()[2];
+        // Check if the parcel is still there and if the reward is still valid
+        const go_pick_up_intentions = this.intention_queue.filter(intention => {
+            if (intention.predicate === 'go_pick_up') {
+                let time_now = Date.now();
+                let parcel = intention.get_args()[0];
+                if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
+                    return false;
+                }
+                return true;
+            }
+        });
+        
+        // //check with time if the parcel is still there
+        // let time_now = Date.now();
+        // for (let intention of go_pick_up_intentions) {
+        //     let parcel = intention.get_args()[0];
+        //     if (parcel.time + parcel.reward * 1000 < time_now) {
+        //         // delete the intention from the queue
+        //         this.intention_queue = this.intention_queue.filter(intention => intention !== intention);
+        //         console.log("deleted intention: ", intention.get_predicate(), intention.get_args()[0]);
+
+        //         // var sec = (parcel.time + parcel.reward * 1000 - time_now) / 1000;
+        //         // console.log("reward: ", sec)
+        //     }
+        // }
+
 
         if (go_pick_up_intentions.length > 0) {
             // Sort intentions by utility
@@ -68,7 +94,7 @@ class IntentionRevisionAgent {
                 return utilityB - utilityA;
             });
             const best_intention = ordered_intentions[0];
-            console.log('best_intention', best_intention);
+            // console.log('best_intention', best_intention.get_predicate(), best_intention.get_args()[0]);
 
 
             if (best_intention.get_utility(me.number_of_parcels_carried)['utility'] > 0) {
@@ -151,6 +177,10 @@ class IntentionRevisionAgent {
 
     async loop() {
         while (true) {
+
+            // check current intentions
+
+
             // Consumes intention_queue if not empty
             const intention = this.select_best_intention();
 
@@ -158,6 +188,7 @@ class IntentionRevisionAgent {
             // }
 
             if (intention) {
+                console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
                 // console.log('intentionRevision.loop', this.intention_queue.map(i => i.predicate));
 
                 // Current intention

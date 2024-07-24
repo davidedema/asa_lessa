@@ -122,6 +122,10 @@ class Intention {
         return this.#args;
     }
 
+    get_predicate() {
+        return this.#predicate;
+    }
+
 
     log ( ...args ) {
         if ( this.#parent && this.#parent.log )
