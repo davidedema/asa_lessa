@@ -24,10 +24,15 @@ class GoPutDown extends Plan {
     }
 
     async execute(grid, deliveryPoints, me) {
-        const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
-        await this.subIntention('go_to_astar', deliverPoint, grid, me);
-        await client.putdown()
-        me.number_of_parcels_carried = 0;
+        if (me.number_of_parcels_carried != 0) {
+            const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
+            await this.subIntention('go_to_astar', deliverPoint, grid, me);
+            await client.putdown()
+            me.number_of_parcels_carried = 0;
+        }
+        else {
+            console.log("I don't have any parcels to deliver");
+        }
     }
 
 }
