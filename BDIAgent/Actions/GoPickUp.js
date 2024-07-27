@@ -3,12 +3,14 @@ import client from "../client.js";
 
 class GoPickUp extends Plan {
 
+    #desire = 'go_pick_up';
+
     isApplicableTo(desire) {
-        return desire == 'go_pick_up';
+        return desire == this.#desire;
     }
 
-    async execute({ x, y }, grid, me) {
-        await this.subIntention('go_to_astar', { x, y }, grid, me);
+    async execute(intentionRevision,father_desire,{ x, y }, grid, me) {
+        await this.subIntention(intentionRevision,this.#desire,'go_to_astar', { x, y }, grid, me);
         await client.pickup()
         
         const numberOfParcelsCarried = me._number_of_parcels_carried +1;

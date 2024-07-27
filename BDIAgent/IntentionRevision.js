@@ -46,9 +46,8 @@ class IntentionRevisionAgent {
         let ordered_intentions = new Array();
 
         if (this.intention_queue.length == 0) {
-            return new Intention(this, 'random_move');
+            return new Intention(this,"" ,'random_move');
         }
-        
         const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_put_down');
         if (go_put_down_intentions.length > 0) {
             var go_put_down_intention = go_put_down_intentions[0];
@@ -66,6 +65,7 @@ class IntentionRevisionAgent {
             if (intention.predicate === 'go_pick_up') {
                 let time_now = Date.now();
                 let parcel = intention.get_args()[0];
+                // NON FUNZIONA SE DECAY E' 0
                 if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
                     // parcel expired
                     return false;
@@ -82,10 +82,7 @@ class IntentionRevisionAgent {
                 }
                 // distance from the parcel
                 let distance = computeManhattanDistance({ x: me.x, y: me.y }, parcel);
-                
-                console.log('distance', distance);
-                console.log('reward', reward);
-
+        
                 // if the distance is too far we are not interested
                 // distance / 2 cause we move at 2 cells per second
                 if ( (distance / 2) > reward) {
@@ -108,84 +105,21 @@ class IntentionRevisionAgent {
 
 
             if (best_intention.get_utility(me.number_of_parcels_carried)['utility'] > 0) {
-                this.intention_queue = this.intention_queue.filter(intention => intention !== best_intention);
+                // this.intention_queue = this.intention_queue.filter(intention => intention !== best_intention);
                 return best_intention;
             } else if (me.number_of_parcels_carried > 0) {
-                this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
+                // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
                 return go_put_down_intention;
             } else {
-                return new Intention(this, 'random_move');
+                return new Intention(this,"" ,'random_move');
             }
         } else if (me.number_of_parcels_carried > 0) {
-            this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
+            // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
             return go_put_down_intention;
         } else {
-            return new Intention(this, 'random_move');
+            return new Intention(this, "",'random_move');
         }
     }
-
-
-    //? NOW IS NOT USED, WHAT IS THE PURPOSE OF THIS FUNCTION
-    // order_intentions() {
-    //     // Sort intentions by priority
-    //     let ordered_intentions = new Array();
-
-    //     if (this.intention_queue.length == 0) {
-    //         return;
-    //     }
-
-    //     // Filter only the go_pick_up intentions
-    //     const go_put_down_intention = this.intention_queue.filter(intention => intention.predicate !== 'go_pick_up')[0];
-
-    //     const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
-    //     ordered_intentions.push(...go_pick_up_intentions);
-
-    //     // idea: o prendo un nuovo pacchetto o lascio quelli che ho
-    //     // finchè reisco ad aumentare il reward prendo pacchetti
-    //     // altriementi lascio
-
-    //     if (go_pick_up_intentions.length > 0) {
-    //         // Sort intentions by utility
-    //         ordered_intentions = go_pick_up_intentions.sort((a, b) => {
-    //             const utilityA = a.get_utility()['utility'];
-    //             const utilityB = b.get_utility()['utility'];
-    //             return utilityB - utilityA;
-    //         });
-    //     }
-    //     let expected_reward = 0;
-    //     if (ordered_intentions.length == 0) {
-    //         return this.intention_queue;
-    //     }
-    //     const me = ordered_intentions[0].get_args()[2];
-    //     let i = me.number_of_parcels_carried;
-    //     console.log('i', i);
-    //     let _start = { x: me.x, y: me.y };
-    //     let j = 0;
-    //     for (let intention of ordered_intentions) {
-
-    //         let intention_utility = intention.get_utility(_start = { x: _start.x, y: _start.y });
-    //         let utility = intention_utility['utility'];
-    //         let path_length = intention_utility['path_length'];
-    //         let added_reward = utility - i * path_length + path_length;
-    //         if (added_reward < 0) {
-    //             // ordered_intentions = ordered_intentions.slice(0, i);
-    //             ordered_intentions.splice(0, j, go_put_down_intention);
-    //             // me.number_of_parcels_carried = 0;
-    //             break;
-    //         }
-    //         expected_reward += added_reward;
-    //         if (intention) {
-    //             _start = intention.get_args()[0];
-    //         } else {
-    //             console.log('intention is undefined');
-    //         }
-    //         j++;
-    //     }
-
-
-    //     ordered_intentions.push(go_put_down_intention);
-    //     this.intention_queue = ordered_intentions;
-    // }
 
     async loop() {
         while (true) {
@@ -193,39 +127,24 @@ class IntentionRevisionAgent {
             // Consumes intention_queue if not empty
             const intention = this.select_best_intention();
 
-
-            // if (intention && intention.predicate != 'go_put_down') {
-            // }
-
             if (intention) {
-                // console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
-                // console.log('intentionRevision.loop', this.intention_queue.map(i => i.predicate));
-
-                // Current intention
-
-                // Is queued intention still valid? Do I still want to achieve it?
-                // TODO this hard-coded implementation is an example
-                // let id = intention.predicate[2]
-                // let p = parcels.get(id)
-                // if ( p && p.carriedBy ) {
-                //     console.log( 'Skipping intention because no more valid', intention.predicate )
-                //     continue;
-                // }
-
+                console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
+                
                 // Start achieving intention
                 await intention.achieve()
                     // Catch eventual error and continue
                     .catch(error => {
                         intention.stop();
-                        console.log('Failed intention', intention.predicate, 'with error:', error)
+                        // console.log('Failed intention', intention.predicate, 'with error:', error)
+                    }).finally(() => {
+                        // Remove intention from queue
+                        this.intention_queue = this.intention_queue.filter(i => i !== intention);
                     });
             }
             // Postpone next iteration at setImmediate
             await new Promise(res => setImmediate(res));
         }
     }
-
-    // async push ( predicate ) { }
 
     log(...args) {
         console.log(...args)
@@ -261,11 +180,9 @@ class IntentionRevisionReplaceAgent extends IntentionRevisionAgent {
 
 class IntentionRevisionRevise extends IntentionRevisionAgent {
 
-
-
     async push(predicate, ...args) {
-        console.log('Revising intention queue. Received', ...predicate);
-        const intention = new Intention(this, predicate, ...args);
+        // console.log('Revising intention queue. Received', ...predicate);
+        const intention = new Intention(this,"", predicate, ...args);
         this.intention_queue.push(intention);
         // TODO
         // - order intentions based on utility function (reward - cost) (for example, parcel score minus distance)

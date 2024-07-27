@@ -52,7 +52,7 @@ function agentLoop(perceived_parcels) {
         } 
     }
     me._number_of_parcels_carried = i;
-    console.log('number of parcels carried', me._number_of_parcels_carried)
+    // console.log('number of parcels carried', me._number_of_parcels_carried)
     /**
      * Options
     */

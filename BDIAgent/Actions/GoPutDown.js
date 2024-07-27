@@ -4,8 +4,10 @@ import { astar, Graph } from "../astar.js";
 
 class GoPutDown extends Plan {
 
+    #desire = 'go_put_down';
+
     isApplicableTo(desire) {
-        return desire == 'go_put_down';
+        return desire == this.#desire;
     }
 
     findClosestDeliveryPoint(x, y, grid, deliveryPoints) {
@@ -23,10 +25,10 @@ class GoPutDown extends Plan {
         return closestDeliveryPoint[closestDeliveryPoint.length - 1];
     }
 
-    async execute(grid, deliveryPoints, me) {
+    async execute(intentionRevision,father_desire,grid, deliveryPoints, me) {
         if (me.number_of_parcels_carried != 0) {
             const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
-            await this.subIntention('go_to_astar', deliverPoint, grid, me);
+            await this.subIntention(intentionRevision,this.#desire,'go_to_astar', deliverPoint, grid, me);
             await client.putdown()
             me.number_of_parcels_carried = 0;
         }

@@ -17,7 +17,7 @@ class Agent {
     }
 
     async queue(desire, ...args) {
-        const current = new Intention(desire, ...args)
+        const current = new Intention(desire,"", ...args)
         this.intention_queue.push(current);
     }
 

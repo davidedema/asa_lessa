@@ -1,6 +1,6 @@
 import Plan from "../Plan.js";
 import client from "../client.js";
-import {astar, Graph} from '../astar.js';
+import { astar, Graph } from '../astar.js';
 
 class GotoA extends Plan {
 
@@ -8,14 +8,24 @@ class GotoA extends Plan {
         return desire == 'go_to_astar';
     }
 
-    async execute({ x, y }, grid, me) {
+    async execute(intentionRevision, father_desire,{ x, y }, grid, me) {
+
         const graph = new Graph(grid.getMap());
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
-        // console.log('result', result);
 
         for (let i = 0; i < result.length; i++) {
+            const best = intentionRevision.select_best_intention()
+            if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
+                throw ['FIND ANOTHER INTENTION ', x, y];
+            }else if(father_desire == 'go_pick_up'){
+                const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
+                if (best_position.x != end.x || best_position.y != end.y) {
+                    throw ['FIND ANOTHER INTENTION ', x, y];
+                }
+            }
+
             x = result[i].x;
             y = result[i].y;
             // console.log('moving to', x, y);
@@ -50,7 +60,7 @@ class GotoA extends Plan {
 
             if (!status_x && !status_y) {
                 console.log('stucked');
-                
+
                 throw ['stucked', x, y];
             } else if (me.x == x && me.y == y) {
                 // console.log('target reached')

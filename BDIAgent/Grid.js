@@ -49,14 +49,14 @@ class Grid {
             })
         })
 
-        this.#agentMap.forEach(agent => {
-            // console.log(agent.x, agent.y)
-            if( Date.now() - agent.time + 1 < 0){
-                throw new Error("NEGATIVE TIME")
-            }
-            grid[parseInt(agent.x)][parseInt(agent.x)] = Date.now() - agent.time + 1;
-            // console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
-        });
+        // this.#agentMap.forEach(agent => {
+        //     // console.log(agent.x, agent.y)
+        //     if( Date.now() - agent.time + 1 < 0){
+        //         throw new Error("NEGATIVE TIME")
+        //     }
+        //     grid[parseInt(agent.x)][parseInt(agent.x)] = Date.now() - agent.time + 1;
+        //     // console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
+        // });
 
 
         return grid;

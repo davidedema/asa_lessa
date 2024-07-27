@@ -11,8 +11,8 @@ class Plan {
 
     #sub_intentions = [];
 
-    async subIntention(desire, ...args) {
-        const sub_intention = new Intention(this, desire, ...args);
+    async subIntention(intentionRevision,father_desire,desire, ...args) {
+        const sub_intention = new Intention(intentionRevision,father_desire ,desire, ...args);
         this.#sub_intentions.push(sub_intention);
         return await sub_intention.achieve();
     }

@@ -3,8 +3,8 @@ import GoPickUp from "./Actions/GoPickUp.js";
 import GotoA from "./Actions/GotoA.js";
 import GoPutDown from "./Actions/GoPutDown.js";
 import RandomMove from "./Actions/RandomMove.js";
-import {astar, Graph} from './astar.js';
-import configPromise from './config.js';   
+import { astar, Graph } from './astar.js';
+import configPromise from './config.js';
 
 const plans = [];
 
@@ -19,76 +19,26 @@ plans.push(new GotoA());
 plans.push(new GoPutDown());
 plans.push(new RandomMove());
 
-// class Intention extends Promise {
-
-//     #current_plan;
-//     stop() {
-//         console.log('stop intention and current plan');
-//         this.#current_plan.stop();
-//     }
-
-//     #desire;
-//     #args;
-
-//     #resolve;
-//     #reject;
-
-//     constructor(desire, ...args) {
-//         var resolve, reject;
-//         super(async (res, rej) => {
-//             resolve = res; reject = rej;
-//         })
-//         this.#resolve = resolve
-//         this.#reject = reject
-//         this.#desire = desire;
-//         this.#args = args;
-//     }
-
-//     #started = false;
-//     async achieve() {
-//         if (this.#started)
-//             return this;
-//         else
-//             this.#started = true;
-
-//         for (const plan of plans) {
-//             if (plan.isApplicableTo(this.#desire)) {
-//                 this.#current_plan = plan;
-//                 // console.log('achieving desire', this.#desire, ...this.#args, 'with plan', plan);
-//                 try {
-//                     const plan_res = await plan.execute(...this.#args);
-//                     this.#resolve(plan_res);
-//                     // console.log('plan', plan, 'succesfully achieved intention', this.#desire, ...this.#args, 'with result', plan_res);
-//                     return plan_res
-//                 } catch (error) {
-//                     // console.log('plan', plan, 'failed while trying to achieve intention', this.#desire, ...this.#args, 'with error', error);
-//                 }
-//             }
-//         }
-
-//         this.#reject();
-//         // console.log('no plan satisfied the desire ', this.#desire, ...this.#args);
-//         // throw 'no plan satisfied the desire ' + this.#desire;
-//     }
-
-// }
-
 
 class Intention {
 
     // Plan currently used for achieving the intention 
     #current_plan;
-    
+
     // This is used to stop the intention
     #stopped = false;
-    get stopped () {
+    get stopped() {
         return this.#stopped;
     }
 
-    stop () {
-        this.log( 'stop intention', ...this.#predicate );
+    print() {
+        console.log('Intention', this.#predicate, this.#args, this.#utility);
+    }
+
+    stop() {
+        this.log('stop intention', ...this.#predicate);
         this.#stopped = true;
-        if ( this.#current_plan)
+        if (this.#current_plan)
             this.#current_plan.stop();
     }
 
@@ -100,25 +50,27 @@ class Intention {
     /**
      * predicate is in the form ['go_to', x, y]
      */
-    get predicate () {
+    get predicate() {
         return this.#predicate;
     }
 
-    get utility () {
+    get utility() {
         return this.#utility;
     }
 
     #predicate;
     #args;
     #utility;
+    #father_desire;
 
-    constructor ( parent, predicate , ...args) {
+    constructor(parent, father_desire, predicate, ...args) {
         this.#parent = parent;
+        this.#father_desire = father_desire;
         this.#predicate = predicate;
         this.#args = args;
     }
 
-    get_args () {
+    get_args() {
         return this.#args;
     }
 
@@ -127,50 +79,47 @@ class Intention {
     }
 
 
-    log ( ...args ) {
-        if ( this.#parent && this.#parent.log )
-            this.#parent.log( '\t', ...args )
+    log(...args) {
+        if (this.#parent && this.#parent.log)
+            this.#parent.log('\t', ...args)
         else
-            console.log( ...args )
+            console.log(...args)
     }
 
-    get_utility (num_parcels_carried, _start = null) {
+    get_utility(num_parcels_carried, _start = null) {
         const parcel = this.#args[0];
         const me = this.#args[2];
         const grid = this.#args[1];
         const graph = new Graph(grid.getMap());
         let start = null;
-        if(_start){
+        if (_start) {
             start = graph.grid[_start.x][_start.y]
-        }else {
+        } else {
             start = graph.grid[parseInt(me.x)][parseInt(me.y)];
-        }        
+        }
         const end = graph.grid[parseInt(parcel.x)][parseInt(parcel.y)];
         const result = astar.search(graph, start, end);
         const path_length = result.length;
-        let decad = parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1));
+        let decad = parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0, -1));
         if (decad == 0) {
             decad = 1;
         }
-        if (config['PARCEL_DECADING_INTERVAL'] == 'infinite'){
+        if (config['PARCEL_DECADING_INTERVAL'] == 'infinite') {
             decad = 1;
         }
-        // console.log('decad', decad);
 
-
-        const utility = parcel.reward - num_parcels_carried * path_length *decad ;// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
+        const utility = parcel.reward - num_parcels_carried * path_length * decad;// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
         this.#utility = utility;
-        return {utility, path_length};
-        console.log('get_utility', this.#predicate);
+        return { utility, path_length };
     }
 
     #started = false;
     /**
      * Using the plan library to achieve an intention
      */
-    async achieve () {
+    async achieve() {
         // Cannot start twice
-        if ( this.#started)
+        if (this.#started)
             return this;
         else
             this.#started = true;
@@ -179,32 +128,28 @@ class Intention {
         for (const planClass of plans) {
 
             // if stopped then quit
-            if ( this.stopped ) throw [ 'stopped intention', ...this.predicate ];
+            if (this.stopped) throw ['stopped intention', ...this.predicate];
 
             // if plan is 'statically' applicable
-            if ( planClass.isApplicableTo( this.predicate ) ) {
-                // plan is instantiated
-                // this.#current_plan = new planClass(this.parent);
-                // this.log('achieving intention', ...this.predicate, 'with plan', planClass.name);
-                // and plan is executed and result returned
+            if (planClass.isApplicableTo(this.predicate)) {
                 try {
-                    const plan_res = await planClass.execute( ...this.#args );
+                    const plan_res = await planClass.execute(this.#parent,this.#father_desire, ...this.#args);
                     // this.log( 'succesful intention', this.predicate, 'with plan', planClass.name, 'with result:', plan_res );
                     return plan_res
-                // or errors are caught so to continue with next plan
+                    // or errors are caught so to continue with next plan
                 } catch (error) {
-                    this.log( 'failed intention', this.predicate,'with plan', planClass.name, 'with error:', error );
+                    this.log('failed intention', this.predicate, 'with plan', planClass.name, 'with error:', error);
                 }
             }
 
         }
 
         // if stopped then quit
-        if ( this.stopped ) throw [ 'stopped intention', ...this.predicate ];
+        if (this.stopped) throw ['stopped intention', ...this.predicate];
 
         // no plans have been found to satisfy the intention
         // this.log( 'no plan satisfied the intention ', ...this.predicate );
-        throw ['no plan satisfied the intention ', ...this.predicate ]
+        throw ['no plan satisfied the intention ', ...this.predicate]
     }
 
 }
