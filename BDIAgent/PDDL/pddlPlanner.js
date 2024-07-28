@@ -1,4 +1,4 @@
-import { onlineSolver, PddlExecutor, PddlExecutor } from "@unitn-asa/pddl-client";
+import { Beliefset, onlineSolver, PddlExecutor, PddlProblem } from "@unitn-asa/pddl-client";
 
 import fs from 'fs';
 
@@ -15,8 +15,19 @@ function readFile ( path ) {
 
 }
 
-domain = await readFile('domain-lights.pddl');
-problem = await readFile('problem-lights.pddl');
+const beliefs = new Beliefset();
+
+
+
+var pddlProb = new PddlProblem(
+    'lights',
+    'light1 light2',
+    '(switched-off light1) (switched-off light2)',
+    'amd (switched-on light1) (switched-on light2)',
+);
+
+var domain = await readFile('/home/davide/Desktop/asa_lessa/BDIAgent/PDDL/domain-lights.pddl');
+var problem = pddlProb.toPddlString();
 
 
 var plan = await onlineSolver(domain, problem);
