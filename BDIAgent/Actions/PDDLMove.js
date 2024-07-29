@@ -60,3 +60,5 @@ class PDDLMove extends Plan {
 
 
 }
+
+export default PDDLMove;
