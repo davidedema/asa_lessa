@@ -18,12 +18,13 @@ function readFile ( path ) {
 class PDDLPlanner {
     constructor(map, from, to) {
         this.map = map;
-        this.from = from;
-        this.to = to;
+        this.from = map.ids[from.x][from.y];
+        this.to = map.ids[to.x][to.y];
     }
 
     async getProblem() {
         await this.createProblem();
+        return this.problem_str + this.domain_str + this.objects_str + this.initState + this.goalState;
     }
 
     async createProblem() {
@@ -31,7 +32,7 @@ class PDDLPlanner {
         this.domain_str = '(:domain deliveroojs) ';
         let { predicates, facts } = await this.computePredicatesAndFacts();
         // add initial point
-        statementList.push(`(at ${this.from.id})`);
+        predicates.push(`(at ${this.from})`);
         // add all of the objects
         let objects_str = '(:objects ';
         for (let id of facts) {
@@ -47,7 +48,7 @@ class PDDLPlanner {
         initState += ') ';
         this.initState = initState;
         // add goal
-        this.goalState = `(:goal (at ${this.to.id})) )`; //last parenthesis is for the problem-
+        this.goalState = `(:goal (at ${this.to})) )`; //last parenthesis is for the problem-
     }
 
     async computePredicatesAndFacts() {
