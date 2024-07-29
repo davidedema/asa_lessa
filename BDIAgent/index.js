@@ -120,6 +120,7 @@ client.onMap((width, height, map) => {
     for (const { x, y, delivery } of map) {
         grid.set(y, x, delivery ? 1 : 2);
     }
+    grid.setIds();
 });
 
 

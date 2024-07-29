@@ -1,4 +1,4 @@
-(define (domain deliveroo_js)
+(define (domain deliveroojs)
 
     (:requirements :strips :typing :disjunctive-preconditions)
 

@@ -11,12 +11,27 @@ class Grid {
         this.width = width
         this.height = height
         this.#map = Array(width).fill().map(() => Array(height).fill(0));
+        this.ids = Array(width).fill().map(() => Array(height).fill(0));
     }
 
     set(x, y, value) {
         this.#map[y][x] = value;
         if (value == 1) {
             this.#deliverPoints.push({ x: y, y: x});
+        }
+    }
+
+    setIds() {
+        // use this.ids and gives a alphabetic id for each tile
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                // not wall
+                if (this.#map[y][x] != 0) {
+                    this.ids[y][x] = String.fromCharCode(65 + y) + (x + 1);
+                } else{
+                    this.ids[y][x] = 0;
+                }
+            }
         }
     }
 

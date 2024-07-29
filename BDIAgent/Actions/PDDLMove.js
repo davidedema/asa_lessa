@@ -1,6 +1,8 @@
 import Plan from "../Plan.js";
 import client from "../client.js";
 import { astar, Graph } from '../astar.js';
+import { onlineSolver, PddlExecutor, PddlProblem, Beliefset } from "@unitn-asa/pddl-client";
+
 
 class PDDLMove extends Plan {
 
@@ -14,7 +16,10 @@ class PDDLMove extends Plan {
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
 
-        
+        beliefSet = new Beliefset();
+        beliefSet.declare('')
+
+
     }
 
 
