@@ -3,11 +3,11 @@ import client from "../client.js";
 import { astar, Graph } from '../astar.js';
 import { onlineSolver, PddlExecutor, PddlProblem, Beliefset } from "@unitn-asa/pddl-client";
 import { PDDLPlanner } from "../PDDL/pddlPlanner.js";
-
+import fs from 'fs';
 
 class PDDLMove extends Plan {
 
-    static isApplicableTo(desire) {
+    isApplicableTo(desire) {
         return desire == 'pdll_move';
     }
 
@@ -18,11 +18,11 @@ class PDDLMove extends Plan {
 
         const planner = new PDDLPlanner(grid, start, end);
         const problem = await planner.getProblem();
-        const domain = await fs.readFileSync('./BDIAgent/PDDL/domain.pddl', 'utf8').replace(/\r?\n|\r/g, '').replace(/\s\s+/g, ' ');
+        const domain =fs.readFileSync('/home/davide/Desktop/asa_lessa/BDIAgent/PDDL/domain.pddl', 'utf8').replace(/\r?\n|\r/g, '').replace(/\s\s+/g, ' ');
 
         console.log("Sending to remote planner");
 
-        const plan = await onlineSolver(domain, problem);
+        var plan = await onlineSolver(domain, problem);
 
         if ( plan ) {
             for (let i = 0; i < plan.length; i++) {
@@ -30,19 +30,19 @@ class PDDLMove extends Plan {
                 let action = plan[i];
                 let status = undefined;
                 // TODO magari cambiare nome azioni nel dominio pddl così da non dover fare questo switch
-                if (action.action == 'move_up') {
+                if (action.action == 'MOVE_UP') {
                     status = await client.move('up');
                 }
 
-                if (action.action == 'move_down') {
+                if (action.action == 'MOVE_DOWN') {
                     status = await client.move('down');
                 }
 
-                if (action.action == 'move_left') {
+                if (action.action == 'MOVE_LEFT') {
                     status = await client.move('left');
                 }
 
-                if (action.action == 'move_right') {
+                if (action.action == 'MOVE_RIGHT') {
                     status = await client.move('right');
                 }
 

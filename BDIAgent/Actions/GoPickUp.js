@@ -10,7 +10,7 @@ class GoPickUp extends Plan {
     }
 
     async execute(intentionRevision,father_desire,{ x, y }, grid, me) {
-        await this.subIntention(intentionRevision,this.#desire,'go_to_astar', { x, y }, grid, me);
+        await this.subIntention(intentionRevision,this.#desire,'pdll_move', { x, y }, grid, me);
         await client.pickup()
         
         const numberOfParcelsCarried = me._number_of_parcels_carried +1;

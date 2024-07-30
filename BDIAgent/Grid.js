@@ -23,6 +23,7 @@ class Grid {
 
     setIds() {
         // use this.ids and gives a alphabetic id for each tile
+        // TODO MAP IS CREATED NOT GOOD
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 // not wall
