@@ -72,10 +72,10 @@ class PDDLPlanner {
                         predicates.push(`(below ${this.map.ids[x][y]} ${this.map.ids[x][y + 1]})`);
                     }
                     if (x > 0 && this.map.get(x - 1, y) != 0) {
-                        predicates.push(`(left ${this.map.ids[x][y]} ${this.map.ids[x - 1][y]})`);
+                        predicates.push(`(right ${this.map.ids[x][y]} ${this.map.ids[x - 1][y]})`);
                     }
                     if (x < this.map.width - 1 && this.map.get(x + 1, y) != 0) {
-                        predicates.push(`(right ${this.map.ids[x][y]} ${this.map.ids[x + 1][y]})`);
+                        predicates.push(`(left ${this.map.ids[x][y]} ${this.map.ids[x + 1][y]})`);
                     }
                 }
             }
