@@ -7,7 +7,7 @@
 - [x] Pickup di parcelle durante pick up di un altra
 - [x] PDDL
 
-# PT.2 
+## PT.2 
 - [ ] Aggiungere supporto multiclient
   - [ ] Handshake
   - [ ] Strategie multiagente
