@@ -8,6 +8,8 @@ class Me {
         this.carring = false;
         this._number_of_parcels_carried = 0;
         this.decay = undefined;
+        this.pddl = process.argv[2] === 'pddl';
+        console.log(this.pddl);
     }
 
     get number_of_parcels_carried() {

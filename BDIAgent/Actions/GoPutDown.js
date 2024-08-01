@@ -28,7 +28,12 @@ class GoPutDown extends Plan {
     async execute(intentionRevision,father_desire,grid, deliveryPoints, me) {
         if (me.number_of_parcels_carried != 0) {
             const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
-            await this.subIntention(intentionRevision,this.#desire,'go_to_astar', deliverPoint, grid, me);
+            if (me.pddl) {
+                await this.subIntention(intentionRevision,this.#desire,'pdll_move', deliverPoint, grid, me);
+            }
+            else{
+                await this.subIntention(intentionRevision,this.#desire,'go_to_astar', deliverPoint, grid, me);
+            }
             await client.putdown()
             me.number_of_parcels_carried = 0;
         }
