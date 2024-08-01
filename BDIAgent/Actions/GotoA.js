@@ -65,6 +65,9 @@ class GotoA extends Plan {
             } else if (me.x == x && me.y == y) {
                 // console.log('target reached')
             }
+
+            // if some parcels are in the way, pick them up
+            await client.pickup();
         }
     }
 
