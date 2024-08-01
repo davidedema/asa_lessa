@@ -10,4 +10,5 @@
 ## PT.2 
 - [ ] Aggiungere supporto multiclient
   - [ ] Handshake
+  - [ ] Comunicazione intelligente
   - [ ] Strategie multiagente

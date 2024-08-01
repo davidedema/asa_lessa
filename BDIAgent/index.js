@@ -136,3 +136,23 @@ client.onConfig((config) => {
     }
 });
 
+client.onMsg(async (id, name, msg, replyAcknowledgmentCallback) => {
+    if (msg == 'acquarium?') {
+        me.setFriendId(id);
+        await client.say(id, 'acquarium!', replyAcknowledgmentCallback);
+        console.log('I am the slave');
+    }
+    if (msg == 'acquarium!') {
+        me.setFriendId(id);
+        console.log('I am the master');
+    }
+});
+
+// invia messaggio per iniziare l'handshake
+
+client.onConnect(async () => {
+    if (me.master) {
+        await client.shout('acquarium?');
+    }
+});
+

@@ -9,7 +9,8 @@ class Me {
         this._number_of_parcels_carried = 0;
         this.decay = undefined;
         this.pddl = process.argv[2] === 'pddl';
-        console.log(this.pddl);
+        this.master = process.argv[3] === 'master';
+        this.friendId = undefined;
     }
 
     get number_of_parcels_carried() {
@@ -18,6 +19,10 @@ class Me {
 
     set number_of_parcels_carried(value) {
         this._number_of_parcels_carried = value;
+    }
+
+    setFriendId(id) {
+        this.friendId = id;
     }
 
     setValues({ id, name, x, y, score }) {
