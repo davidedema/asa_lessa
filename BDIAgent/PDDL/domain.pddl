@@ -14,22 +14,22 @@
         (at ?tile - Tile)
     )
 
-    (:action move_down
+    (:action down
         :parameters (?tile1 - Tile ?tile2 - Tile)
         :precondition (and (at ?tile1) (below ?tile2 ?tile1))
         :effect (and (at ?tile2) (not (at ?tile1)))
     )
-    (:action move_up
+    (:action up
         :parameters (?tile1 - Tile ?tile2 - Tile)
         :precondition (and (at ?tile1) (above ?tile2 ?tile1))
         :effect (and (at ?tile2) (not (at ?tile1)))
     )
-    (:action move_left
+    (:action left
         :parameters (?tile1 - Tile ?tile2 - Tile)
         :precondition (and(at ?tile1) (left ?tile2 ?tile1))
         :effect (and (at ?tile2) (not (at ?tile1)))
     )
-    (:action move_right
+    (:action right
         :parameters (?tile1 - Tile ?tile2 - Tile)
         :precondition (and (at ?tile1) (right ?tile2 ?tile1))
         :effect (and (at ?tile2) (not (at ?tile1)))

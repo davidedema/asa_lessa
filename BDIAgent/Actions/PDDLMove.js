@@ -24,27 +24,23 @@ class PDDLMove extends Plan {
 
         var plan = await onlineSolver(domain, problem);
 
+        const best = intentionRevision.select_best_intention()
+        if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
+            throw ['FIND ANOTHER INTENTION ', x, y];
+        }else if(father_desire == 'go_pick_up'){
+            const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
+            if (best_position.x != end.x || best_position.y != end.y) {
+                throw ['FIND ANOTHER INTENTION ', x, y];
+            }
+        }
+
         if ( plan ) {
             for (let i = 0; i < plan.length; i++) {
 
                 let action = plan[i];
                 let status = undefined;
-                // TODO magari cambiare nome azioni nel dominio pddl così da non dover fare questo switch
-                if (action.action == 'MOVE_UP') {
-                    status = await client.move('up');
-                }
-
-                if (action.action == 'MOVE_DOWN') {
-                    status = await client.move('down');
-                }
-
-                if (action.action == 'MOVE_LEFT') {
-                    status = await client.move('left');
-                }
-
-                if (action.action == 'MOVE_RIGHT') {
-                    status = await client.move('right');
-                }
+                
+                status = await client.move(action.action.toLowerCase());
 
                 if (status) {
                     me.x = status.x;

@@ -4,7 +4,7 @@ dotenv.config();
 
 const client = new DeliverooApi(
     'http://localhost:8080',
-    process.env.CLIENT_TOKEN
+    process.env.CLIENT_TOKEN_MAIN
 )
 
 export default client;
