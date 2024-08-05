@@ -6,7 +6,6 @@ import RandomMove from "./Actions/RandomMove.js";
 import { astar, Graph } from './astar.js';
 import configPromise from './config.js';
 import PDDLMove from "./Actions/PDDLMove.js";
-import GotoAComm from "./Actions/GotoAComm.js";
 
 const plans = [];
 
@@ -21,7 +20,6 @@ plans.push(new GotoA());
 plans.push(new GoPutDown());
 plans.push(new RandomMove());
 plans.push(new PDDLMove());
-plans.push(new GotoAComm());
 
 class Intention {
 

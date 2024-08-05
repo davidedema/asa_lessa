@@ -153,50 +153,6 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             await client.say(id, msg, replyAcknowledgmentCallback);
         }
     }
-
-    if (msg.header == 'START_JOB') {
-        const info = msg.content;
-        const {x,y} = process_working_zone(info.x, info.y);
-        myAgent.push('go_to_comm', {x, y}, grid, me);
-
-    }
-}
-
-// Given the position of master, go to opposite position
-function process_working_zone(x, y){
-    // find the point opposite to the map
-    // in the right part
-    let center_x = Math.floor(grid.width/2)
-    let center_y = Math.floor(grid.height/2)
-    if (x > (Math.floor(grid.width/2))) {
-        //upper part
-        if (y > (Math.floor(grid.height/2))) {
-            let opposite_x = center_x - (x - center_x)
-            let opposite_y = center_y - (y - center_y)
-            return {x: opposite_x, y: opposite_y}
-        }
-        //lower part
-        else {
-            let opposite_x = center_x - (x - center_x)
-            let opposite_y = center_y + (center_y - y)
-            return {x: opposite_x, y: opposite_y}
-        }
-    }
-    //in the left part
-    else {
-        //upper part
-        if (y > (Math.floor(grid.height/2))) {
-            let opposite_x = center_x + (center_x - x)
-            let opposite_y = center_y - (y - center_y)
-            return {x: opposite_x, y: opposite_y}
-        }
-        //lower part
-        else {
-            let opposite_x = center_x + (center_x - x)
-            let opposite_y = center_y + (center_y - y)
-            return {x: opposite_x, y: opposite_y}
-        }
-    }
 }
 
 // Essendo un architettura master-slave, il master inizializza la comunicazione, il slave risponde
