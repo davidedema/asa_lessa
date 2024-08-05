@@ -11,7 +11,7 @@ class PDDLMove extends Plan {
         return desire == 'pdll_move';
     }
 
-    async execute(intentionRevision, father_desire,{ x, y }, grid, me) {
+    async execute(intentionRevision, father_desire, { x, y }, grid, me) {
         const graph = new Graph(grid.getMap());
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];

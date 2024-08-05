@@ -1,9 +1,9 @@
-import Agent from "./Agent.js";
 import Grid from "./Grid.js";
 import Me from "./Me.js";
 import client from "./client.js";
 import IntentionRevisionRevise from "./IntentionRevision.js";
-import config from "./config.js";   
+import Msg from "./Msg.js";
+import config from "./config.js";
 
 
 function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
@@ -13,8 +13,6 @@ function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
 }
 
 var grid = undefined;
-
-const start = Date.now();
 
 var me = new Me();
 /**
@@ -49,7 +47,7 @@ function agentLoop(perceived_parcels) {
     for (const p of perceived_parcels) {
         if (p.carriedBy == me.id) {
             i++;
-        } 
+        }
     }
     me._number_of_parcels_carried = i;
     // console.log('number of parcels carried', me._number_of_parcels_carried)
@@ -58,7 +56,7 @@ function agentLoop(perceived_parcels) {
     */
     const seenParcels = myAgent.get_parcerls_to_pickup();
     const options = [];
-    for (const parcel of parcels.values()){
+    for (const parcel of parcels.values()) {
         if (!parcel.carriedBy && !seenParcels.includes(parcel.id)) {
             options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
         }
@@ -125,14 +123,49 @@ client.onMap((width, height, map) => {
 
 
 client.onConfig((config) => {
-    if (config.PARCEL_DECADING_INTERVAL != 'infinite'){
+    if (config.PARCEL_DECADING_INTERVAL != 'infinite') {
         // from string to int
-        var decay = parseInt(config.PARCEL_DECADING_INTERVAL.slice(0,-1));
+        var decay = parseInt(config.PARCEL_DECADING_INTERVAL.slice(0, -1));
         me.decay = decay;
     }
     // TODO change this one
     else {
         me.decay = 99999999;
+    }
+});
+
+async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
+    // finalize the handshake
+    if (msg.header == 'HANDSHAKE') {
+        if (!me.master && msg.content == 'acquarium?') {
+            me.setFriendId(id);
+            let msg = new Msg();
+            msg.setHeader("HANDSHAKE");
+            msg.setContent("acquarium!");
+            await client.say(id, msg, replyAcknowledgmentCallback);
+        }
+        if (me.master && msg.content == 'acquarium!') {
+            me.setFriendId(id);
+            console.log('Handshake completed');
+            let msg = new Msg();
+            msg.setHeader("START_JOB");
+            msg.setContent({ x: me.x, y: me.y });
+            await client.say(id, msg, replyAcknowledgmentCallback);
+        }
+    }
+}
+
+// Essendo un architettura master-slave, il master inizializza la comunicazione, il slave risponde
+client.onMsg(async (id, name, msg, replyAcknowledgmentCallback) => handleMsg(id, name, msg, replyAcknowledgmentCallback));
+
+// send a message to init the handshake
+
+client.onConnect(async () => {
+    if (me.master) {
+        let msg = new Msg();
+        msg.setHeader("HANDSHAKE");
+        msg.setContent("acquarium?")
+        await client.shout(msg);
     }
 });
 

@@ -7,6 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bdi_pddl": "node BDIAgent/index.js pddl",
+    "bdi_pddl_master": "node BDIAgent/index.js pddl master",
+    "bdi_pddl_slave": "node BDIAgent/index.js pddl slave",
     "bdi": "node BDIAgent/index.js"
   },
   "repository": {

@@ -21,7 +21,6 @@ plans.push(new GoPutDown());
 plans.push(new RandomMove());
 plans.push(new PDDLMove());
 
-
 class Intention {
 
     // Plan currently used for achieving the intention 
