@@ -1,17 +1,15 @@
 import Plan from "../Plan.js";
 import client from "../client.js";
 import { astar, Graph } from '../astar.js';
-import { onlineSolver, PddlExecutor, PddlProblem, Beliefset } from "@unitn-asa/pddl-client";
-import { PDDLPlanner } from "../PDDL/pddlPlanner.js";
-import fs from 'fs';
 
-class PDDLMove extends Plan {
+class GotoAComm extends Plan {
 
     isApplicableTo(desire) {
-        return desire == 'pdll_move';
+        return desire == 'go_to_comm';
     }
 
-    async execute(intentionRevision, father_desire, { x, y }, grid, me) {
+    async execute({ x, y }, grid, me) {
+
         const graph = new Graph(grid.getMap());
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
@@ -58,7 +56,6 @@ class PDDLMove extends Plan {
 
     }
 
-
 }
 
-export default PDDLMove;
+export default GotoAComm;
