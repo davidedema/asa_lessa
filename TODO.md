@@ -10,5 +10,7 @@
 ## PT.2 
 - [ ] Aggiungere supporto multiclient
   - [x] Handshake
-  - [ ] Comunicazione intelligente
-  - [ ] Strategie multiagente
+  - [ ] Scambio informazioni tra agenti
+  - [ ] Scambio parcella
+  - [ ] Spostati per fare passare altro agente
+  - [ ] Dividersi la mappa
