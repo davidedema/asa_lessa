@@ -42,6 +42,14 @@ function agentLoop(perceived_parcels) {
         parcels.set(p.id, p);
     }
 
+    // if i have a friend, i can send him the perceived parcels
+    if (me.friendId && perceived_parcels.length > 0) {
+        let msg = new Msg();
+        msg.setHeader("INFO_PARCELS");
+        msg.setContent(perceived_parcels);
+        client.say(me.friendId, msg);
+    }
+
     // update parcels carried
     let i = 0;
     for (const p of perceived_parcels) {
@@ -88,7 +96,7 @@ function agentLoop(perceived_parcels) {
 
 }
 
-function agentPerception(perceived_agents) {
+async function agentPerception(perceived_agents) {
     const timeSeen = Date.now();
 
     perceivedAgents.forEach((value, key) => {
@@ -102,10 +110,6 @@ function agentPerception(perceived_agents) {
         perceivedAgents.set(agent.id, { agent, timeSeen, isNear: true });
         grid.setAgent(agent.x, agent.y, timeSeen)
     }
-
-    // console.log(perceivedAgents.values())
-
-
 }
 
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));
@@ -152,6 +156,19 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             msg.setContent({ x: me.x, y: me.y });
             await client.say(id, msg, replyAcknowledgmentCallback);
         }
+    }
+
+    // exchange informations
+    // parcels
+    if (msg.header == 'INFO_PARCELS') {
+        // see content and update the parcels if not already present
+        let new_parcels = msg.content;
+        for (const p of new_parcels) {
+            if (!parcels.has(p.id)) {
+                parcels.set(p.id, p);
+            }
+        }
+        console.log(parcels);
     }
 }
 
