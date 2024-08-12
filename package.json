@@ -9,6 +9,8 @@
     "bdi_pddl": "node BDIAgent/index.js pddl",
     "bdi_pddl_master": "node BDIAgent/index.js pddl master",
     "bdi_pddl_slave": "node BDIAgent/index.js pddl slave",
+    "bdi_master": "node BDIAgent/index.js astar master",
+    "bdi_slave": "node BDIAgent/index.js astar slave",
     "bdi": "node BDIAgent/index.js"
   },
   "repository": {

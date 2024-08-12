@@ -110,6 +110,13 @@ async function agentPerception(perceived_agents) {
         perceivedAgents.set(agent.id, { agent, timeSeen, isNear: true });
         grid.setAgent(agent.x, agent.y, timeSeen)
     }
+
+    if (me.friendId) {
+        let msg = new Msg();
+        msg.setHeader("INFO_AGENTS");
+        msg.setContent(perceived_agents);
+        client.say(me.friendId, msg);
+    }
 }
 
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));
@@ -168,7 +175,14 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 parcels.set(p.id, p);
             }
         }
-        console.log(parcels);
+
+    } else if (msg.header == 'INFO_AGENTS') {
+        let perceived_agents = msg.content;
+        
+        for (const agent of perceived_agents) {
+            perceivedAgents.set(agent.id, agent);
+            // console.log("set perceived agents" + agent.name + " : " + agent.x + " " + agent.y);
+        }
     }
 }
 
@@ -185,4 +199,3 @@ client.onConnect(async () => {
         await client.shout(msg);
     }
 });
-

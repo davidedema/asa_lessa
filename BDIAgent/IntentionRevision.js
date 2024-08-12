@@ -128,7 +128,7 @@ class IntentionRevisionAgent {
             const intention = this.select_best_intention();
 
             if (intention) {
-                console.log("intention selected", intention.get_predicate(), intention.get_args()[0]);
+                console.log("intention selected", intention.get_predicate());
                 
                 // Start achieving intention
                 await intention.achieve()
