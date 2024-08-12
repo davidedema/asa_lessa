@@ -3,8 +3,6 @@ import Me from "./Me.js";
 import client from "./client.js";
 import IntentionRevisionRevise from "./IntentionRevision.js";
 import Msg from "./Msg.js";
-import config from "./config.js";
-
 
 function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
     const dx = Math.abs(Math.round(x1) - Math.round(x2))
@@ -39,11 +37,17 @@ function agentLoop(perceived_parcels) {
     let time = Date.now();
     for (const p of perceived_parcels) {
         p.time = time;
-        parcels.set(p.id, p);
+        if( me.splitMapZone){
+            if(p.x >= me.splitMapZone.minX && p.x <= me.splitMapZone.maxX && p.y >= me.splitMapZone.minY && p.y <= me.splitMapZone.maxY){
+                parcels.set(p.id, p);
+            }
+        }else{
+            parcels.set(p.id, p);
+        }
     }
 
     // if i have a friend, i can send him the perceived parcels
-    if (me.friendId && perceived_parcels.length > 0) {
+    if (me.strategy !== "split_map" && me.friendId && perceived_parcels.length > 0) {
         let msg = new Msg();
         msg.setHeader("INFO_PARCELS");
         msg.setContent(perceived_parcels);
@@ -162,12 +166,63 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             msg.setHeader("START_JOB");
             msg.setContent({ x: me.x, y: me.y });
             await client.say(id, msg, replyAcknowledgmentCallback);
+            console.log(me.strategy)
+            if (me.strategy === "split_map") {
+
+                msg = new Msg();
+                msg.setHeader("SPLIT_MAP");
+
+                if (me.y > grid.height / 2) {
+                    console.log("MASTER GRID ALTA")
+                    const zone = {
+                        minX: 0,
+                        maxX: grid.width,
+                        minY: Math.floor(grid.height / 2),
+                        maxY: grid.height
+                    }
+                    console.log(zone)
+                    me.setSplitMapZone(zone)
+                    const slaveZone = {
+                        minX: 0,
+                        maxX: grid.width,
+                        minY: 0,
+                        maxY: Math.floor(grid.height / 2) - 1
+                    }
+
+                    msg.setContent(slaveZone)
+
+                } else {
+                    console.log("MASTER GRID BASSA")
+
+                    const zone = {
+                        minX: 0,
+                        maxX: grid.width,
+                        minY: 0,
+                        maxY: Math.floor(grid.height / 2) - 1
+                    }
+                    console.log(zone)
+
+                    me.setSplitMapZone(zone)
+                    const slaveZone = {
+                        minX: 0,
+                        maxX: grid.width,
+                        minY: Math.floor(grid.height / 2),
+                        maxY: grid.height
+                    }
+
+                    msg.setContent(slaveZone)
+                }
+
+
+                await client.say(id, msg)
+            }
+
         }
     }
 
     // exchange informations
     // parcels
-    if (msg.header == 'INFO_PARCELS') {
+    if (msg.header === 'INFO_PARCELS') {
         // see content and update the parcels if not already present
         let new_parcels = msg.content;
         for (const p of new_parcels) {
@@ -176,13 +231,38 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             }
         }
 
-    } else if (msg.header == 'INFO_AGENTS') {
+    } else if (msg.header === 'INFO_AGENTS') {
         let perceived_agents = msg.content;
-        
+
         for (const agent of perceived_agents) {
             perceivedAgents.set(agent.id, agent);
             // console.log("set perceived agents" + agent.name + " : " + agent.x + " " + agent.y);
         }
+    } else if (msg.header === "SPLIT_MAP") {
+        me.setSplitMapZone(msg.content)
+        const zone  = msg.content;
+        const destination = { x: zone.minX, y: zone.minY };
+        if (me.x >= zone.minX && me.x <= zone.maxX && me.y >= zone.minY && me.y <= zone.maxY) {
+            console.log("SLAVE ALREADY IN THE CORRECT ZONE");
+        } else {
+            console.log("SLAVE HAS TO MOVE IN THE CORRRECT ZONE");
+            const map = grid.getMap()
+            let _brake = false;
+            for (let i = zone.minX; i <= zone.maxX; i++) {
+
+                for (let j = zone.minY; j <= zone.maxY; j++) {
+                    if( map[i][j] !== 0){
+                        destination.x = i
+                        destination.y = j
+                        _brake = true;
+                        break;
+                    }
+                }
+                if (_brake) { break }
+            }
+            myAgent.push("go_to_astar",destination,grid,me)
+        }
+        console.log(msg.content)
     }
 }
 

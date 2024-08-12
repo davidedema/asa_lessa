@@ -42,11 +42,18 @@ class IntentionRevisionAgent {
     }
 
     select_best_intention() {
+        const split_move = this.intention_queue.filter(intention => intention.predicate === 'go_to_astar');
+        if (split_move.length > 0) {
+            console.log("SPLIT MOVE")
+            split_move[0].print()
+            return split_move[0];
+        }
+
         // Sort intentions by priority
         let ordered_intentions = new Array();
 
         if (this.intention_queue.length == 0) {
-            return new Intention(this,"" ,'random_move');
+            return new Intention(this, "", 'random_move');
         }
         const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_put_down');
         if (go_put_down_intentions.length > 0) {
@@ -56,10 +63,10 @@ class IntentionRevisionAgent {
             var go_put_down_intention = undefined;
         }
         // const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
-        
+
         const me = this.intention_queue[0].get_args()[2];
-        
-        
+
+
         // Check if the parcel is still there and if the reward is still valid
         const go_pick_up_intentions = this.intention_queue.filter(intention => {
             if (intention.predicate === 'go_pick_up') {
@@ -82,10 +89,10 @@ class IntentionRevisionAgent {
                 }
                 // distance from the parcel
                 let distance = computeManhattanDistance({ x: me.x, y: me.y }, parcel);
-        
+
                 // if the distance is too far we are not interested
                 // distance / 2 cause we move at 2 cells per second
-                if ( (distance / 2) > reward) {
+                if ((distance / 2) > reward) {
                     return false;
                 }
                 return true;
@@ -111,13 +118,13 @@ class IntentionRevisionAgent {
                 // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
                 return go_put_down_intention;
             } else {
-                return new Intention(this,"" ,'random_move');
+                return new Intention(this, "", 'random_move');
             }
         } else if (me.number_of_parcels_carried > 0) {
             // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
             return go_put_down_intention;
         } else {
-            return new Intention(this, "",'random_move');
+            return new Intention(this, "", 'random_move');
         }
     }
 
@@ -129,7 +136,7 @@ class IntentionRevisionAgent {
 
             if (intention) {
                 console.log("intention selected", intention.get_predicate());
-                
+
                 // Start achieving intention
                 await intention.achieve()
                     // Catch eventual error and continue
@@ -181,9 +188,14 @@ class IntentionRevisionReplaceAgent extends IntentionRevisionAgent {
 class IntentionRevisionRevise extends IntentionRevisionAgent {
 
     async push(predicate, ...args) {
-        // console.log('Revising intention queue. Received', ...predicate);
-        const intention = new Intention(this,"", predicate, ...args);
+        // console.log('Revising intention queue. Received', predicate);
+        let father_desire = "";
+        if (predicate === "go_to_astar") { 
+            father_desire = "SPLIT" 
+        }
+        const intention = new Intention(this, father_desire, predicate, ...args);
         this.intention_queue.push(intention);
+
         // TODO
         // - order intentions based on utility function (reward - cost) (for example, parcel score minus distance)
         // - eventually stop current one

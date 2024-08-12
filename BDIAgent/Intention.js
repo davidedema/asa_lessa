@@ -134,6 +134,9 @@ class Intention {
             // if plan is 'statically' applicable
             if (planClass.isApplicableTo(this.predicate)) {
                 try {
+                    if (this.#father_desire === "SPLIT" ){
+                        this.log()
+                    }
                     const plan_res = await planClass.execute(this.#parent,this.#father_desire, ...this.#args);
                     // this.log( 'succesful intention', this.predicate, 'with plan', planClass.name, 'with result:', plan_res );
                     return plan_res

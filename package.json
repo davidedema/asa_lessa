@@ -11,6 +11,8 @@
     "bdi_pddl_slave": "node BDIAgent/index.js pddl slave",
     "bdi_master": "node BDIAgent/index.js astar master",
     "bdi_slave": "node BDIAgent/index.js astar slave",
+    "bdi_slave_split_map" : "node BDIAgent/index.js astar slave split_map",
+    "bdi_master_split_map" : "node BDIAgent/index.js astar master split_map",
     "bdi": "node BDIAgent/index.js"
   },
   "repository": {
