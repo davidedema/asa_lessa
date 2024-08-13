@@ -19,13 +19,14 @@ var me = new Me();
 
 client.onYou(({ id, name, x, y, score }) => {
     me.setValues({ id, name, x, y, score });
+    myAgent.me =  me;
 })
 
 const parcels = new Map();
 
 const perceivedAgents = new Map();
 
-const myAgent = new IntentionRevisionRevise();
+const myAgent = new IntentionRevisionRevise(grid, me);
 myAgent.loop();
 
 /**
@@ -134,6 +135,14 @@ client.onMap((width, height, map) => {
         grid.set(y, x, delivery ? 1 : 2);
     }
     grid.setIds();
+    const parcelSpawner = [];
+    for (const parcel of map) {
+        if (parcel.parcelSpawner) {
+            parcelSpawner.push({ x: parcel.x, y: parcel.y });
+        }
+    }
+    grid.setSpawnPoints(parcelSpawner);
+    myAgent.grid = grid;
 });
 
 

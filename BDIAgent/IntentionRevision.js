@@ -8,6 +8,29 @@ const computeManhattanDistance = (start, end) => {
 }
 
 class IntentionRevisionAgent {
+    #grid;
+    #me;
+
+    constructor(grid,me) {
+        this.#grid = grid
+        this.#me = me
+    }
+
+    set grid(value) {
+        this.#grid = value;
+    }
+
+    get grid() {
+        return this.#grid;
+    }
+
+    set me(value) {
+        this.#me = value;
+    }
+
+    get me() {
+        return this.#me;
+    }
 
     #intention_queue = new Array();
     get intention_queue() {
@@ -56,7 +79,7 @@ class IntentionRevisionAgent {
         let ordered_intentions = new Array();
 
         if (this.intention_queue.length == 0) {
-            return new Intention(this, "", 'random_move');
+            return new Intention(this, "", 'random_move',this.grid,this.me);
         }
         const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_put_down');
         if (go_put_down_intentions.length > 0) {
@@ -126,13 +149,13 @@ class IntentionRevisionAgent {
                 // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
                 return go_put_down_intention;
             } else {
-                return new Intention(this, "", 'random_move');
+                return new Intention(this, "", 'random_move',this.grid,this.me);
             }
         } else if (me.number_of_parcels_carried > 0) {
             // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
             return go_put_down_intention;
         } else {
-            return new Intention(this, "", 'random_move');
+            return new Intention(this, "", 'random_move',this.grid,this.me);
         }
     }
 

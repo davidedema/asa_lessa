@@ -21,6 +21,14 @@ class Grid {
         }
     }
 
+    setSpawnPoints(spawnPoints) {
+        this.spawnPoints = spawnPoints;
+    }
+
+    getSpawnPoints() {
+        return this.spawnPoints;
+    }
+
     setIds() {
         // use this.ids and gives a alphabetic id for each tile
         // TODO MAP IS CREATED NOT GOOD
