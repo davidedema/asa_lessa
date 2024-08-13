@@ -1,5 +1,7 @@
 import Intention from "./Intention.js";
 import client from "./client.js";
+import Msg from "./Msg.js";
+import { astar, Graph } from './astar.js';
 
 const computeManhattanDistance = (start, end) => {
     return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
@@ -30,6 +32,7 @@ class IntentionRevisionAgent {
         }
         return parcels
     }
+
     remove(parcel) {
         this.intention_queue = this.intention_queue.filter(intention => {
             if (intention.predicate == 'go_pick_up') {
@@ -73,7 +76,12 @@ class IntentionRevisionAgent {
                 let time_now = Date.now();
                 let parcel = intention.get_args()[0];
                 // NON FUNZIONA SE DECAY E' 0
-                if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
+                if (me.decay === 0) {
+                    if (parcel.time + parcel.reward < time_now) {
+                        // parcel expired
+                        return false;
+                    }
+                } else if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
                     // parcel expired
                     return false;
                 }
@@ -134,8 +142,17 @@ class IntentionRevisionAgent {
             // Consumes intention_queue if not empty
             const intention = this.select_best_intention();
 
+
             if (intention) {
                 console.log("intention selected", intention.get_predicate());
+                let msg = new Msg();
+                msg.setHeader("CURRENT_INTENTION");
+                const content = {
+                    predicate: intention.predicate,
+                    args: intention.get_args()
+                }
+                msg.setContent(content);
+                client.shout(msg);
 
                 // Start achieving intention
                 await intention.achieve()
@@ -146,6 +163,14 @@ class IntentionRevisionAgent {
                     }).finally(() => {
                         // Remove intention from queue
                         this.intention_queue = this.intention_queue.filter(i => i !== intention);
+                        let msg = new Msg();
+                        msg.setHeader("COMPLETED_INTENTION");
+                        const content = {
+                            predicate: intention.predicate,
+                            args: intention.get_args()
+                        }
+                        msg.setContent(content);
+                        client.shout(msg);
                     });
             }
             // Postpone next iteration at setImmediate
@@ -176,10 +201,10 @@ class IntentionRevisionReplaceAgent extends IntentionRevisionAgent {
         const intention = new Intention(this, predicate, ...args);
         this.intention_queue.push(intention);
 
-        // Force current intention stop 
-        // if ( last ) {
-        //     last.stop();
-        // }
+    }
+
+    async erase(intention) {
+        this.intention_queue = this.intention_queue.filter(i => i !== intention);
     }
 
 }
@@ -190,16 +215,12 @@ class IntentionRevisionRevise extends IntentionRevisionAgent {
     async push(predicate, ...args) {
         // console.log('Revising intention queue. Received', predicate);
         let father_desire = "";
-        if (predicate === "go_to_astar") { 
-            father_desire = "SPLIT" 
+        if (predicate === "go_to_astar") {
+            father_desire = "SPLIT"
         }
         const intention = new Intention(this, father_desire, predicate, ...args);
         this.intention_queue.push(intention);
 
-        // TODO
-        // - order intentions based on utility function (reward - cost) (for example, parcel score minus distance)
-        // - eventually stop current one
-        // - evaluate validity of intention
     }
 
 }

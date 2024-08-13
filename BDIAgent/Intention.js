@@ -21,6 +21,25 @@ plans.push(new GoPutDown());
 plans.push(new RandomMove());
 plans.push(new PDDLMove());
 
+const findClosestDeliveryPoint = (x, y, grid, deliveryPoints) => {
+    const graph = new Graph(grid);
+    const start = graph.grid[x][y];
+    const end = graph.grid[deliveryPoints[0].x][deliveryPoints[0].y];
+
+    let closestDeliveryPoint = astar.search(graph, start, end);
+    for (const deliveryPoint of deliveryPoints) {
+        const end = graph.grid[deliveryPoint.x][deliveryPoint.y];
+        if (start.x === end.x && start.y === end.y) {
+            return end;
+        }
+        const result = astar.search(graph, start, end);
+        if (result.length < closestDeliveryPoint.length) {
+            closestDeliveryPoint = result;
+        }
+    }
+    return closestDeliveryPoint[closestDeliveryPoint.length - 1];
+}
+
 class Intention {
 
     // Plan currently used for achieving the intention 
@@ -37,7 +56,7 @@ class Intention {
     }
 
     stop() {
-        this.log('stop intention', ...this.#predicate);
+        this.log('stop intention', this.#predicate, this.#args[0]);
         this.#stopped = true;
         if (this.#current_plan)
             this.#current_plan.stop();
@@ -109,7 +128,19 @@ class Intention {
             decad = 1;
         }
 
-        const utility = parcel.reward - num_parcels_carried * path_length * decad;// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
+        const deliveryPoints = grid.getDeliverPoints();
+        let deliveryPoint = findClosestDeliveryPoint(parseInt(me.x), parseInt(me.y), grid.getMap(), deliveryPoints);
+        if (deliveryPoint === undefined){
+
+            console.log('deliveryPoint', deliveryPoint);
+            deliveryPoint = findClosestDeliveryPoint(parseInt(me.x), parseInt(me.y), grid.getMap(), deliveryPoints);
+
+        }
+        deliveryPoint = graph.grid[deliveryPoint.x][deliveryPoint.y];
+        const delivery_result = astar.search(graph, end, deliveryPoint);
+        const deliery_path_length = delivery_result.length;
+
+        const utility = parcel.reward - num_parcels_carried * path_length * decad - (num_parcels_carried +1) * deliery_path_length * decad// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
         this.#utility = utility;
         return { utility, path_length };
     }

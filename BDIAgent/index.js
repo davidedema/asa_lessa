@@ -236,7 +236,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
 
         for (const agent of perceived_agents) {
             perceivedAgents.set(agent.id, agent);
-            grid.setAgent(agent.id, agent.x, agent.y, timeSeen)
+            grid.setAgent(agent.id, agent.x, agent.y, Date.now())
 
             // console.log("set perceived agents" + agent.name + " : " + agent.x + " " + agent.y);
         }
@@ -265,6 +265,10 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             myAgent.push("go_to_astar", destination, grid, me)
         }
         console.log(msg.content)
+    }else if (msg.header === "CURRENT_INTENTION"){
+        console.log("RECEIVED INTENTION")
+    }else if (msg.header === "COMPLETED_INTENTION"){
+        console.log("COMPLETED INTENTION" , msg.content)
     }
 }
 
