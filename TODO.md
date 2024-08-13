@@ -13,4 +13,4 @@
   - [x] Scambio informazioni degli agenti
   - [x] Scambio parcella
   - [ ] Spostati per fare passare altro agente
-  - [ ] Dividersi la mappa
+  - [x] Dividersi la mappa
