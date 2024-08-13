@@ -144,7 +144,7 @@ class IntentionRevisionAgent {
 
 
             if (intention) {
-                console.log("intention selected", intention.get_predicate());
+                console.log("intention selected", intention.get_predicate() , intention.get_args()[0]);
                 let msg = new Msg();
                 msg.setHeader("CURRENT_INTENTION");
                 const content = {
