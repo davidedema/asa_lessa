@@ -13,6 +13,8 @@
     "bdi_slave": "node BDIAgent/index.js astar slave",
     "bdi_slave_split_map" : "node BDIAgent/index.js astar slave split_map",
     "bdi_master_split_map" : "node BDIAgent/index.js astar master split_map",
+    "bdi_master_passing" : "node BDIAgent/index.js astar master passing",
+    "bdi_slave_passing" : "node BDIAgent/index.js astar slave passing",
     "bdi": "node BDIAgent/index.js"
   },
   "repository": {

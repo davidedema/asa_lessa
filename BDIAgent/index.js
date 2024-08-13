@@ -37,11 +37,11 @@ function agentLoop(perceived_parcels) {
     let time = Date.now();
     for (const p of perceived_parcels) {
         p.time = time;
-        if( me.splitMapZone){
-            if(p.x >= me.splitMapZone.minX && p.x <= me.splitMapZone.maxX && p.y >= me.splitMapZone.minY && p.y <= me.splitMapZone.maxY){
+        if (me.splitMapZone) {
+            if (p.x >= me.splitMapZone.minX && p.x <= me.splitMapZone.maxX && p.y >= me.splitMapZone.minY && p.y <= me.splitMapZone.maxY) {
                 parcels.set(p.id, p);
             }
-        }else{
+        } else {
             parcels.set(p.id, p);
         }
     }
@@ -112,7 +112,7 @@ async function agentPerception(perceived_agents) {
 
     for (const agent of perceived_agents) {
         perceivedAgents.set(agent.id, { agent, timeSeen, isNear: true });
-        grid.setAgent(agent.x, agent.y, timeSeen)
+        grid.setAgent(agent.id, agent.x, agent.y, timeSeen)
     }
 
     if (me.friendId) {
@@ -240,7 +240,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         }
     } else if (msg.header === "SPLIT_MAP") {
         me.setSplitMapZone(msg.content)
-        const zone  = msg.content;
+        const zone = msg.content;
         const destination = { x: zone.minX, y: zone.minY };
         if (me.x >= zone.minX && me.x <= zone.maxX && me.y >= zone.minY && me.y <= zone.maxY) {
             console.log("SLAVE ALREADY IN THE CORRECT ZONE");
@@ -251,7 +251,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             for (let i = zone.minX; i <= zone.maxX; i++) {
 
                 for (let j = zone.minY; j <= zone.maxY; j++) {
-                    if( map[i][j] !== 0){
+                    if (map[i][j] !== 0) {
                         destination.x = i
                         destination.y = j
                         _brake = true;
@@ -260,7 +260,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 }
                 if (_brake) { break }
             }
-            myAgent.push("go_to_astar",destination,grid,me)
+            myAgent.push("go_to_astar", destination, grid, me)
         }
         console.log(msg.content)
     }

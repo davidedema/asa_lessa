@@ -4,9 +4,9 @@ class Grid {
      */
 
     #map;
-    #deliverPoints = [];    
+    #deliverPoints = [];
     #agentMap = [];
-    
+
     constructor(width, height) {
         this.width = width
         this.height = height
@@ -17,7 +17,7 @@ class Grid {
     set(x, y, value) {
         this.#map[y][x] = value;
         if (value == 1) {
-            this.#deliverPoints.push({ x: y, y: x});
+            this.#deliverPoints.push({ x: y, y: x });
         }
     }
 
@@ -29,15 +29,19 @@ class Grid {
                 // not wall
                 if (this.#map[y][x] != 0) {
                     this.ids[y][x] = String.fromCharCode(65 + y) + (x + 1);
-                } else{
+                } else {
                     this.ids[y][x] = 0;
                 }
             }
         }
     }
 
-    setAgent(x, y,time) {
-        this.#agentMap.push({ x: x, y: y, time: time});
+    setAgent(id, x, y, time) {
+        this.#agentMap.push({ id: id, x: x, y: y, time: time });
+    }
+
+    getAgentMap() {
+        return this.#agentMap;
     }
 
     get(x, y) {
@@ -60,8 +64,8 @@ class Grid {
         grid.forEach((row, x) => {
             row.forEach((cell, y) => {
                 if (cell != 0) {
-                        grid[x][y] = 1;
-                    }
+                    grid[x][y] = 1;
+                }
             })
         })
 

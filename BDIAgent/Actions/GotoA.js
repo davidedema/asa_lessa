@@ -61,6 +61,13 @@ class GotoA extends Plan {
             }
 
             if (!status_x && !status_y) {
+                const agentMap = grid.getAgentMap()
+                for (const agent of agentMap) {
+                    if (agent.x == x && agent.y == y) {
+                        console.log('stucked with agent', agent.id);
+                        break;
+                    }
+                }
                 console.log('stucked');
 
                 throw ['stucked', x, y];
