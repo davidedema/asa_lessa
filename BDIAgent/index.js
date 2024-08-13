@@ -236,6 +236,8 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
 
         for (const agent of perceived_agents) {
             perceivedAgents.set(agent.id, agent);
+            grid.setAgent(agent.id, agent.x, agent.y, timeSeen)
+
             // console.log("set perceived agents" + agent.name + " : " + agent.x + " " + agent.y);
         }
     } else if (msg.header === "SPLIT_MAP") {
