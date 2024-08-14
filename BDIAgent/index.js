@@ -275,8 +275,10 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         console.log(msg.content)
     }else if (msg.header === "CURRENT_INTENTION"){
         console.log("RECEIVED INTENTION")
+        me.friendIntention = msg.content
     }else if (msg.header === "COMPLETED_INTENTION"){
         console.log("COMPLETED INTENTION" , msg.content)
+        myAgent.erase(msg.content)
     }
 }
 

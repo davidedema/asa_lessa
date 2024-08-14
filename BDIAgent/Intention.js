@@ -56,7 +56,7 @@ class Intention {
     }
 
     stop() {
-        this.log('stop intention', this.#predicate, this.#args[0]);
+        this.log('stop intention', this.#predicate);
         this.#stopped = true;
         if (this.#current_plan)
             this.#current_plan.stop();

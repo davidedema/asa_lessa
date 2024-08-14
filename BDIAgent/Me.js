@@ -11,6 +11,7 @@ class Me {
         this.pddl = process.argv[2] === 'pddl';
         this.master = process.argv[3] === 'master';
         this.friendId = undefined;
+        this.friendIntention = undefined;
         this.strategy =  process.argv[4] || "default";
         this.splitMapZone = undefined
     }
