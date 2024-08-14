@@ -18,9 +18,13 @@ class GotoA extends Plan {
         for (let i = 0; i < result.length; i++) {
             if(father_desire !== "SPLIT"){
                 const best = intentionRevision.select_best_intention()
-                if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
+                if (best.get_predicate() !== father_desire ) {
                     throw ['FIND ANOTHER INTENTION ', x, y];
-                }else if(father_desire == 'go_pick_up'){
+                }
+                // if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
+                //     throw ['FIND ANOTHER INTENTION ', x, y];
+                // }
+                else if (father_desire === "go_pick_up") {
                     const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
                     if (best_position.x != end.x || best_position.y != end.y) {
                         throw ['FIND ANOTHER INTENTION ', x, y];

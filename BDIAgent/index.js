@@ -95,7 +95,6 @@ function agentLoop(perceived_parcels) {
     */
     if (best_option) {
         myAgent.push(best_option.desire, ...best_option.args)
-        myAgent.push('go_put_down', grid, grid.getDeliverPoints(), me);
     }
 
 

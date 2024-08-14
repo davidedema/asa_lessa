@@ -129,18 +129,13 @@ class Intention {
         }
 
         const deliveryPoints = grid.getDeliverPoints();
-        let deliveryPoint = findClosestDeliveryPoint(parseInt(me.x), parseInt(me.y), grid.getMap(), deliveryPoints);
-        if (deliveryPoint === undefined){
+        let deliveryPoint = findClosestDeliveryPoint(parseInt(parcel.x), parseInt(parcel.y), grid.getMap(), deliveryPoints);
 
-            console.log('deliveryPoint', deliveryPoint);
-            deliveryPoint = findClosestDeliveryPoint(parseInt(me.x), parseInt(me.y), grid.getMap(), deliveryPoints);
-
-        }
         deliveryPoint = graph.grid[deliveryPoint.x][deliveryPoint.y];
         const delivery_result = astar.search(graph, end, deliveryPoint);
         const deliery_path_length = delivery_result.length;
 
-        const utility = parcel.reward - num_parcels_carried * path_length * decad - (num_parcels_carried +1) * deliery_path_length * decad// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
+        const utility = parcel.reward - num_parcels_carried * path_length * 1/decad - (num_parcels_carried +1) * deliery_path_length * 1/decad// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
         this.#utility = utility;
         return { utility, path_length };
     }

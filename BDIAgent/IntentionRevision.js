@@ -2,6 +2,12 @@ import Intention from "./Intention.js";
 import client from "./client.js";
 import Msg from "./Msg.js";
 import { astar, Graph } from './astar.js';
+import configPromise from './config.js';
+
+let config;
+configPromise.then((conf) => {
+    config = conf;
+});
 
 const computeManhattanDistance = (start, end) => {
     return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
@@ -75,55 +81,41 @@ class IntentionRevisionAgent {
             return split_move[0];
         }
 
-        // Sort intentions by priority
-        let ordered_intentions = new Array();
-
         if (this.intention_queue.length == 0) {
+            if (this.me.number_of_parcels_carried > 0) {
+                return new Intention(this, "", 'go_put_down',this.grid,this.grid.getDeliverPoints(),this.me);;
+            }
             return new Intention(this, "", 'random_move',this.grid,this.me);
         }
-        const go_put_down_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_put_down');
-        if (go_put_down_intentions.length > 0) {
-            var go_put_down_intention = go_put_down_intentions[0];
-        }
-        else {
-            var go_put_down_intention = undefined;
-        }
-        // const go_pick_up_intentions = this.intention_queue.filter(intention => intention.predicate === 'go_pick_up');
-
-        const me = this.intention_queue[0].get_args()[2];
-
+        
+        const go_put_down_intention = new Intention(this, "", 'go_put_down',this.grid,this.grid.getDeliverPoints(),this.me);
+        // Sort intentions by priority
+        let ordered_intentions = new Array();
 
         // Check if the parcel is still there and if the reward is still valid
         const go_pick_up_intentions = this.intention_queue.filter(intention => {
             if (intention.predicate === 'go_pick_up') {
                 let time_now = Date.now();
                 let parcel = intention.get_args()[0];
-                // NON FUNZIONA SE DECAY E' 0
-                if (me.decay === 0) {
-                    if (parcel.time + parcel.reward < time_now) {
-                        // parcel expired
-                        return false;
-                    }
-                } else if (parcel.time + parcel.reward * me.decay * 1000 < time_now) {
-                    // parcel expired
-                    return false;
-                }
-
                 // TODO sicuro si può migliorare questa parte
                 // valid parcel
                 // get the current reward
-                let reward = Math.floor((parcel.time + parcel.reward * 1000 - time_now) / 1000);
-                parcel.reward = reward;
-                // for now we are not interested
+                let reward
+                // if there is a decay calculate how much is the actual reward of the parcels
+                if (this.me.decay !== 0){
+                    reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * 1/this.me.decay) );
+                }
+                // for now we are not interested since we don't gain any point
                 if (reward <= 3) {
                     return false;
                 }
                 // distance from the parcel
-                let distance = computeManhattanDistance({ x: me.x, y: me.y }, parcel);
+                let distance = computeManhattanDistance({ x: this.me.x, y: this.me.y }, parcel);
 
                 // if the distance is too far we are not interested
                 // distance / 2 cause we move at 2 cells per second
-                if ((distance / 2) > reward) {
+                const agentSpeed = parseFloat(config['RANDOM_AGENT_SPEED'].slice(0, -1))
+                if ((distance / agentSpeed) > reward) {
                     return false;
                 }
                 return true;
@@ -134,24 +126,25 @@ class IntentionRevisionAgent {
         if (go_pick_up_intentions.length > 0) {
             // Sort intentions by utility
             ordered_intentions = go_pick_up_intentions.sort((a, b) => {
-                const utilityA = a.get_utility(me.number_of_parcels_carried)['utility'];
-                const utilityB = b.get_utility(me.number_of_parcels_carried)['utility'];
+                const utilityA = a.get_utility(this.me.number_of_parcels_carried)['utility'];
+                const utilityB = b.get_utility(this.me.number_of_parcels_carried)['utility'];
                 return utilityB - utilityA;
             });
             const best_intention = ordered_intentions[0];
+            
+            // console.log(best_intention.get_utility(this.me.number_of_parcels_carried)['utility'])
             // console.log('best_intention', best_intention.get_predicate(), best_intention.get_args()[0]);
 
-
-            if (best_intention.get_utility(me.number_of_parcels_carried)['utility'] > 0) {
+            if (best_intention.get_utility(this.me.number_of_parcels_carried)['utility'] > 0) {
                 // this.intention_queue = this.intention_queue.filter(intention => intention !== best_intention);
                 return best_intention;
-            } else if (me.number_of_parcels_carried > 0) {
+            } else if (this.me.number_of_parcels_carried > 0) {
                 // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
                 return go_put_down_intention;
             } else {
                 return new Intention(this, "", 'random_move',this.grid,this.me);
             }
-        } else if (me.number_of_parcels_carried > 0) {
+        } else if (this.me.number_of_parcels_carried > 0) {
             // this.intention_queue = this.intention_queue.filter(intention => intention !== go_put_down_intention);
             return go_put_down_intention;
         } else {
