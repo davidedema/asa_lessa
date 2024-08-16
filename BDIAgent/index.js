@@ -27,8 +27,15 @@ function areDirectionOpposite(direction1, direction2) {
 }
 
 function areStuckedInACLosedPath(directions1, directions2) {
-    if (directions1.length !== 1 || directions2.length !== 1) {
+    if (directions1.length > 1 || directions2.length > 1) {
+        // console.log("Posso fare quello che voglio")
+        // console.log("Master: ", directions1)
+        // console.log("Slave: ", directions2)
         return false;
+    }
+    else if (directions1.length === 0 || directions2.length === 0) {
+        // console.log("Non so che cazzo fare")
+        return true;
     }
     else {
         return areDirectionOpposite(directions1[0].name, directions2[0].name)
@@ -283,9 +290,10 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         let perceived_agents = msg.content;
 
         for (const agent of perceived_agents) {
-            perceivedAgents.set(agent.id, agent);
-            grid.setAgent(agent.id, agent.x, agent.y, Date.now())
-
+            if (agent.id !== me.id) {
+                perceivedAgents.set(agent.id, agent);
+                grid.setAgent(agent.id, agent.x, agent.y, Date.now())
+            }
             // console.log("set perceived agents" + agent.name + " : " + agent.x + " " + agent.y);
         }
     } else if (msg.header === "SPLIT_MAP") {
@@ -314,7 +322,6 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         }
         console.log(msg.content)
     } else if (msg.header === "CURRENT_INTENTION") {
-        console.log("RECEIVED INTENTION")
         me.friendIntention = msg.content
     } else if (msg.header === "COMPLETED_INTENTION") {
         console.log("COMPLETED INTENTION", msg.content)
@@ -331,7 +338,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         const possibleDirection = grid.getPossibleDirection(me.x, me.y);
 
         if (areStuckedInACLosedPath(possibleDirection, friendDirection)) {
-            if (me.currentIntention.predicate === "go_put_down") {
+            if (me.currentIntention.predicate === "go_put_down" && possibleDirection.length > 0) {
                 await client.putdown()
                 const direction = getOppositeDirection(friendDirection[0].name)
                 await client.move(direction)
@@ -341,7 +348,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 msg.setContent(content)
                 await client.say(id, msg)
                 console.log("send pick up parcels and put down")
-            } else if (me.friendIntention.predicate === "go_put_down") {
+            } else if (me.currentIntention.predicate === "go_put_down" && possibleDirection.length === 0) {
+                console.log("I have to put down parcels but I'm stucked")
+            } else if (me.friendIntention && me.friendIntention.predicate === "go_put_down") {
                 let msg = new Msg();
                 msg.setHeader("LEAVE_PARCELS_AND_MOVE")
                 const content = { direction: friendDirection[0].name }

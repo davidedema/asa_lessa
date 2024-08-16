@@ -42,11 +42,9 @@ class GotoA extends Plan {
 
             x = result[i].x;
             y = result[i].y;
-            // console.log('moving to', x, y);
             let status_x = undefined;
             let status_y = undefined;
 
-            // console.log('me', me);
 
             if (x > me.x)
                 status_x = await client.move('right')
@@ -92,8 +90,6 @@ class GotoA extends Plan {
                 console.log('stucked');
 
                 throw ['stucked', x, y];
-            } else if (me.x == x && me.y == y) {
-                // console.log('target reached')
             }
 
             // if some parcels are in the way, pick them up

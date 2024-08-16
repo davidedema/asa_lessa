@@ -174,7 +174,7 @@ class IntentionRevisionAgent {
 
             if (this.#me.stuckedFriend) { 
                 await new Promise(resolve => setTimeout(resolve, 1000));
-             }
+            }
 
             let intention;
             let priority_intention = false;
@@ -189,7 +189,6 @@ class IntentionRevisionAgent {
             }
 
             if (intention) {
-                console.log("intention selected", intention.get_predicate());
                 this.#me.setCurrentIntention(intention);
                 if (this.#me.friendId) {
                     let msg = new Msg();
