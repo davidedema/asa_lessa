@@ -172,7 +172,9 @@ class IntentionRevisionAgent {
     async loop() {
         while (true) {
 
-            if (this.#me.stuckedFriend) { continue }
+            if (this.#me.stuckedFriend) { 
+                await new Promise(resolve => setTimeout(resolve, 1000));
+             }
 
             let intention;
             let priority_intention = false;

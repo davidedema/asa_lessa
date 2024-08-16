@@ -332,9 +332,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
 
         if (areStuckedInACLosedPath(possibleDirection, friendDirection)) {
             if (me.currentIntention.predicate === "go_put_down") {
-                client.putdown()
+                await client.putdown()
                 const direction = getOppositeDirection(friendDirection[0].name)
-                client.move(direction)
+                await client.move(direction)
                 let msg = new Msg();
                 msg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
                 const content = { direction: direction }
@@ -344,7 +344,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             } else if (me.friendIntention.predicate === "go_put_down") {
                 let msg = new Msg();
                 msg.setHeader("LEAVE_PARCELS_AND_MOVE")
-                const content = { direction: getOppositeDirection(friendDirection[0].name) }
+                const content = { direction: friendDirection[0].name }
                 msg.setContent(content)
                 await client.say(id, msg)
                 console.log("send leave parcels and move")
@@ -355,7 +355,11 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         const direction = msg.content.direction;
         await client.move(direction)
         await client.pickup()
+        me.stuckedFriend = false;
         myAgent.push_priority_action("go_put_down", [grid, grid.getDeliverPoints(), me])
+        // let newmsg = new Msg();
+        // newmsg.setHeader("STUCK_RESOLVED");
+        // await client.say(id, newmsg)
     } else if (msg.header === "LEAVE_PARCELS_AND_MOVE") {
         console.log("LEAVE PARCELS AND MOVE")
         const direction = msg.content.direction;
@@ -366,6 +370,8 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         const content = { direction: direction }
         newmsg.setContent(content)
         await client.say(id, newmsg)
+    }else if(msg.header === "STUCK_RESOLVED"){
+        me.stuckedFriend = false;
     }
 }
 
