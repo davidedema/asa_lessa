@@ -10,6 +10,46 @@ function distance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
     return dx + dy;
 }
 
+function areDirectionOpposite(direction1, direction2) {
+    if (direction1 === "up" && direction2 === "down") {
+        return true;
+    }
+    if (direction1 === "down" && direction2 === "up") {
+        return true;
+    }
+    if (direction1 === "left" && direction2 === "right") {
+        return true;
+    }
+    if (direction1 === "right" && direction2 === "left") {
+        return true;
+    }
+    return false;
+}
+
+function areStuckedInACLosedPath(directions1, directions2) {
+    if (directions1.length !== 1 || directions2.length !== 1) {
+        return false;
+    }
+    else {
+        return areDirectionOpposite(directions1[0].name, directions2[0].name)
+    }
+}
+
+function getOppositeDirection(direction) {
+    if (direction === "up") {
+        return "down";
+    }
+    if (direction === "down") {
+        return "up";
+    }
+    if (direction === "left") {
+        return "right";
+    }
+    if (direction === "right") {
+        return "left";
+    }
+}
+
 var grid = undefined;
 
 var me = new Me();
@@ -19,7 +59,7 @@ var me = new Me();
 
 client.onYou(({ id, name, x, y, score }) => {
     me.setValues({ id, name, x, y, score });
-    myAgent.me =  me;
+    myAgent.me = me;
 })
 
 const parcels = new Map();
@@ -273,12 +313,59 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             myAgent.push("go_to_astar", destination, grid, me)
         }
         console.log(msg.content)
-    }else if (msg.header === "CURRENT_INTENTION"){
+    } else if (msg.header === "CURRENT_INTENTION") {
         console.log("RECEIVED INTENTION")
         me.friendIntention = msg.content
-    }else if (msg.header === "COMPLETED_INTENTION"){
-        console.log("COMPLETED INTENTION" , msg.content)
+    } else if (msg.header === "COMPLETED_INTENTION") {
+        console.log("COMPLETED INTENTION", msg.content)
         myAgent.erase(msg.content)
+    } else if (msg.header === "STUCKED_TOGETHER" && me.name ==="master") {
+
+        // basic idea:
+        // if we are stucked in a closed path, if one has to put down parcels, it will be pass all the parcels to the firend, and the firend will 
+        // put down all the parcels for both
+        // if both are going to pick up parcels they should swap their intention (maybe also their carried parcel but idk)
+
+        me.stuckedFriend = true;
+        const friendDirection = msg.content;
+        const possibleDirection = grid.getPossibleDirection(me.x, me.y);
+
+        if (areStuckedInACLosedPath(possibleDirection, friendDirection)) {
+            if (me.currentIntention.predicate === "go_put_down") {
+                client.putdown()
+                const direction = getOppositeDirection(friendDirection[0].name)
+                client.move(direction)
+                let msg = new Msg();
+                msg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
+                const content = { direction: direction }
+                msg.setContent(content)
+                await client.say(id, msg)
+                console.log("send pick up parcels and put down")
+            } else if (me.friendIntention.predicate === "go_put_down") {
+                let msg = new Msg();
+                msg.setHeader("LEAVE_PARCELS_AND_MOVE")
+                const content = { direction: getOppositeDirection(friendDirection[0].name) }
+                msg.setContent(content)
+                await client.say(id, msg)
+                console.log("send leave parcels and move")
+            }
+        }
+    } else if (msg.header === "PICK_UP_PARCELS_AND_PUT_DOWN") {
+        console.log("PICK UP PARCELS AND PUT DOWN")
+        const direction = msg.content.direction;
+        await client.move(direction)
+        await client.pickup()
+        myAgent.push_priority_action("go_put_down", [grid, grid.getDeliverPoints(), me])
+    } else if (msg.header === "LEAVE_PARCELS_AND_MOVE") {
+        console.log("LEAVE PARCELS AND MOVE")
+        const direction = msg.content.direction;
+        await client.putdown()
+        await client.move(direction)
+        let newmsg = new Msg();
+        newmsg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
+        const content = { direction: direction }
+        newmsg.setContent(content)
+        await client.say(id, newmsg)
     }
 }
 

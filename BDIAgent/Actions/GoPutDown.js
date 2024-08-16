@@ -14,12 +14,22 @@ class GoPutDown extends Plan {
         const graph = new Graph(grid);
         const start = graph.grid[x][y];
         const end = graph.grid[deliveryPoints[0].x][deliveryPoints[0].y];
+    
         let closestDeliveryPoint = astar.search(graph, start, end);
         for (const deliveryPoint of deliveryPoints) {
             const end = graph.grid[deliveryPoint.x][deliveryPoint.y];
+            if (start.x === end.x && start.y === end.y) {
+                return end;
+            }
             const result = astar.search(graph, start, end);
-            if (result.length < closestDeliveryPoint.length) {
-                closestDeliveryPoint = result;
+            if (closestDeliveryPoint.length > 0 && result.length > 0){
+                if (result.length < closestDeliveryPoint.length) {
+                    closestDeliveryPoint = result;
+                }
+            }else{
+                if(result.length > 0){
+                    closestDeliveryPoint = result;
+                }
             }
         }
         return closestDeliveryPoint[closestDeliveryPoint.length - 1];

@@ -33,8 +33,14 @@ const findClosestDeliveryPoint = (x, y, grid, deliveryPoints) => {
             return end;
         }
         const result = astar.search(graph, start, end);
-        if (result.length < closestDeliveryPoint.length) {
-            closestDeliveryPoint = result;
+        if (closestDeliveryPoint.length > 0 && result.length > 0){
+            if (result.length < closestDeliveryPoint.length) {
+                closestDeliveryPoint = result;
+            }
+        }else{
+            if(result.length > 0){
+                closestDeliveryPoint = result;
+            }
         }
     }
     return closestDeliveryPoint[closestDeliveryPoint.length - 1];
@@ -130,6 +136,10 @@ class Intention {
 
         const deliveryPoints = grid.getDeliverPoints();
         let deliveryPoint = findClosestDeliveryPoint(parseInt(parcel.x), parseInt(parcel.y), grid.getMap(), deliveryPoints);
+
+        if (deliveryPoint === undefined){
+            return { utility: -Infinity, path_length };
+        }
 
         deliveryPoint = graph.grid[deliveryPoint.x][deliveryPoint.y];
         const delivery_result = astar.search(graph, end, deliveryPoint);
