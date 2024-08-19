@@ -200,7 +200,7 @@ client.onConfig((config) => {
     }
     // TODO change this one
     else {
-        me.decay = 99999999;
+        me.decay = NaN;
     }
 });
 

@@ -134,10 +134,10 @@ class IntentionRevisionAgent {
                 // get the current reward
                 let reward
                 // if there is a decay calculate how much is the actual reward of the parcels
-                if (this.me.decay !== 0) {
-                    reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * 1 / this.me.decay));
-                } else {
+                if (isNaN(this.me.decay)) {
                     reward = parcel.reward
+                } else {
+                    reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * 1 / this.me.decay));
                 }
                 // for now we are not interested since we don't gain any point
                 if (reward <= 3) {
