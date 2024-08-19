@@ -28,16 +28,16 @@ class GotoA extends Plan {
                         throw ['FIND ANOTHER INTENTION ', x, y];
                     }
                 }
-                if(me.friendId){
-                    let msg = new Msg();
-                    msg.setHeader("CURRENT_INTENTION");
-                    const content = {
-                        predicate: best.get_predicate(),
-                        args: best.get_args()
-                    }
-                    msg.setContent(content);
-                    client.say(me.friendId,msg);
-                }
+                // if(me.friendId){
+                //     let msg = new Msg();
+                //     msg.setHeader("CURRENT_INTENTION");
+                //     const content = {
+                //         predicate: best.get_predicate(),
+                //         args: best.get_args()
+                //     }
+                //     msg.setContent(content);
+                //     client.say(me.friendId,msg);
+                // }
             }
 
             x = result[i].x;
@@ -75,7 +75,7 @@ class GotoA extends Plan {
                 for (const agent of agentMap) {
                     if (agent.x == x && agent.y == y) {
                         console.log('stucked with agent', agent.id);
-                        if (agent.id === me.friendId && me.name === 'slave') {
+                        if (agent.id === me.friendId) {
                             me.stuckedFriend = true
                             console.log('stucked with my Friend');
                             let msg = new Msg();

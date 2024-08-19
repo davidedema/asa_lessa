@@ -162,7 +162,7 @@ async function agentPerception(perceived_agents) {
         grid.setAgent(agent.id, agent.x, agent.y, timeSeen)
     }
 
-    if (me.friendId) {
+    if (me.friendId && perceived_agents.length > 0) {
         let msg = new Msg();
         msg.setHeader("INFO_AGENTS");
         msg.setContent(perceived_agents);
@@ -175,7 +175,7 @@ client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels
 client.onAgentsSensing(async (perceived_agents) => agentPerception(perceived_agents));
 
 
-client.onMap((width, height, map) => {
+client.onMap((height, width, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
         grid.set(y, x, delivery ? 1 : 2);
@@ -213,6 +213,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             msg.setHeader("HANDSHAKE");
             msg.setContent("acquarium!");
             await client.say(id, msg, replyAcknowledgmentCallback);
+            msg.setHeader("CURRENT_INTENTION");
+            msg.setContent(me.currentIntention)
+            await client.say(id, msg)
         }
         if (me.master && msg.content == 'acquarium!') {
             me.setFriendId(id);
@@ -271,6 +274,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
 
                 await client.say(id, msg)
             }
+            msg.setHeader("CURRENT_INTENTION");
+            msg.setContent(me.currentIntention)
+            await client.say(id, msg)
 
         }
     }
@@ -324,9 +330,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
     } else if (msg.header === "CURRENT_INTENTION") {
         me.friendIntention = msg.content
     } else if (msg.header === "COMPLETED_INTENTION") {
-        console.log("COMPLETED INTENTION", msg.content)
+        // console.log("COMPLETED INTENTION", msg.content)
         myAgent.erase(msg.content)
-    } else if (msg.header === "STUCKED_TOGETHER" && me.name ==="master") {
+    } else if (msg.header === "STUCKED_TOGETHER" && me.name === "master") {
 
         // basic idea:
         // if we are stucked in a closed path, if one has to put down parcels, it will be pass all the parcels to the firend, and the firend will 
@@ -338,9 +344,15 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         const possibleDirection = grid.getPossibleDirection(me.x, me.y);
 
         if (areStuckedInACLosedPath(possibleDirection, friendDirection)) {
-            if (me.currentIntention.predicate === "go_put_down" && possibleDirection.length > 0) {
+            if (me.currentIntention.predicate !== "go_put_down" && me.friendIntention.predicate !== "go_put_down") {
+                me.stuckedFriend = false;
+                let newmsg = new Msg();
+                newmsg.setHeader("STUCK_RESOLVED");
+                await client.say(id, newmsg)
+            }
+            else if (me.currentIntention.predicate === "go_put_down" && possibleDirection.length > 0) {
                 await client.putdown()
-                const direction = getOppositeDirection(friendDirection[0].name)
+                const direction = possibleDirection[0].name;
                 await client.move(direction)
                 let msg = new Msg();
                 msg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
@@ -349,7 +361,25 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 await client.say(id, msg)
                 console.log("send pick up parcels and put down")
             } else if (me.currentIntention.predicate === "go_put_down" && possibleDirection.length === 0) {
-                console.log("I have to put down parcels but I'm stucked")
+                let msg = new Msg();
+                msg.setHeader("MOVE_IN_ORDER_TO_UNSTUCK_ME");
+                const content = { direction: friendDirection[0].name }
+                msg.setContent(content)
+                await client.say(id, msg)
+            } else if (me.friendIntention.predicate === "go_put_down" && friendDirection.length === 0) {
+                await client.move(friendDirection[0].name)
+                let newmsg = new Msg();
+                newmsg.setHeader("MOVE_AND_LEAVE_PARCELS_AND_MOVE");
+                const content = { direction: friendDirection[0].name }
+                newmsg.setContent(content)
+                await client.say(id, newmsg)
+            } else if (possibleDirection.length === 0) {
+                // otherwise if it will spawn a parcel where is stucked , it can't be able to pick up
+                console.log("Unstack me and my friend")
+                me.stuckedFriend = false;
+                let newmsg = new Msg();
+                newmsg.setHeader("STUCK_RESOLVED");
+                await client.say(id, newmsg)
             } else if (me.friendIntention && me.friendIntention.predicate === "go_put_down") {
                 let msg = new Msg();
                 msg.setHeader("LEAVE_PARCELS_AND_MOVE")
@@ -358,6 +388,19 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 await client.say(id, msg)
                 console.log("send leave parcels and move")
             }
+        } else {
+            me.stuckedFriend = false;
+            let newmsg = new Msg();
+            newmsg.setHeader("STUCK_RESOLVED");
+            await client.say(id, newmsg)
+        }
+    } else if (msg.header === "STUCKED_TOGETHER" && me.name === "slave") {
+        const possibleDirection = grid.getPossibleDirection(me.x, me.y)
+        if (possibleDirection.length === 0) {
+            let newmsg = new Msg()
+            newmsg.setHeader("STUCKED_TOGETHER")
+            newmsg.setContent(possibleDirection)
+            await client.say(id, newmsg)
         }
     } else if (msg.header === "PICK_UP_PARCELS_AND_PUT_DOWN") {
         console.log("PICK UP PARCELS AND PUT DOWN")
@@ -366,9 +409,9 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         await client.pickup()
         me.stuckedFriend = false;
         myAgent.push_priority_action("go_put_down", [grid, grid.getDeliverPoints(), me])
-        // let newmsg = new Msg();
-        // newmsg.setHeader("STUCK_RESOLVED");
-        // await client.say(id, newmsg)
+        let newmsg = new Msg();
+        newmsg.setHeader("STUCK_RESOLVED");
+        await client.say(id, newmsg)
     } else if (msg.header === "LEAVE_PARCELS_AND_MOVE") {
         console.log("LEAVE PARCELS AND MOVE")
         const direction = msg.content.direction;
@@ -379,8 +422,25 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         const content = { direction: direction }
         newmsg.setContent(content)
         await client.say(id, newmsg)
-    }else if(msg.header === "STUCK_RESOLVED"){
+    } else if (msg.header === "STUCK_RESOLVED") {
         me.stuckedFriend = false;
+    } else if (msg.header === "MOVE_IN_ORDER_TO_UNSTUCK_ME") {
+        const direction = msg.content.direction;
+        await client.move(direction)
+        let newmsg = new Msg();
+        newmsg.setHeader("MOVE_AND_LEAVE_PARCELS_AND_MOVE")
+        const content = { direction: direction }
+        newmsg.setContent(content)
+        await client.say(id, newmsg)
+    } else if (msg.header === "MOVE_AND_LEAVE_PARCELS_AND_MOVE") {
+        const direction = msg.content.direction;
+        await client.move(direction)
+        await client.putdown()
+        await client.move(getOppositeDirection(direction))
+        let newmsg = new Msg();
+        newmsg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
+        newmsg.setContent({ direction: getOppositeDirection(direction) })
+        await client.say(id, newmsg)
     }
 }
 

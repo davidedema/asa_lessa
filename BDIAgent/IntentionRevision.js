@@ -110,8 +110,19 @@ class IntentionRevisionAgent {
                 if (this.me.friendId) {
                     if (this.me.friendIntention) {
                         if (this.me.friendIntention.predicate === 'go_pick_up' && this.me.friendIntention.args[0].id === intention.get_args()[0].id) {
-                            console.log("NOT CONSIDERING", intention.get_args()[0].id)
-                            return false;
+                            const graph = new Graph(this.#grid.getMap());
+                            let start = graph.grid[Math.floor(this.me.x)][Math.floor(this.me.y)];
+                            const end = graph.grid[intention.get_args()[0].x][intention.get_args()[0].y];
+                            const myDistance = astar.search(graph, start, end).length;
+                            start = graph.grid[Math.floor(this.me.friendIntention.args[2].x)][Math.floor(this.me.friendIntention.args[2].y)];
+                            const friendDistance = astar.search(graph, start, end).length;
+                            if (friendDistance < myDistance) {
+                                console.log("NOT CONSIDERING", intention.get_args()[0].id)
+                                return false;
+                            }else{
+                                console.log("CONSIDERING I'M NEAR")
+                            }
+
                         }
                     }
                 }
@@ -170,10 +181,18 @@ class IntentionRevisionAgent {
     }
 
     async loop() {
+        let streak_stucked = 0;
         while (true) {
+            if(streak_stucked > 10){
+                streak_stucked = 0 ;
+                this.#me.stuckedFriend = false;
+            }
 
             if (this.#me.stuckedFriend) { 
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                new Promise(resolve => setTimeout(resolve, 1000));
+                streak_stucked++;
+                continue;
+
             }
 
             let intention;
@@ -189,17 +208,20 @@ class IntentionRevisionAgent {
             }
 
             if (intention) {
-                this.#me.setCurrentIntention(intention);
+                console.log("INTENTION", intention.predicate)
                 if (this.#me.friendId) {
-                    let msg = new Msg();
-                    msg.setHeader("CURRENT_INTENTION");
-                    const content = {
-                        predicate: intention.predicate,
-                        args: intention.get_args()
+                    if (intention.predicate !== 'random_move') {
+                        let msg = new Msg();
+                        msg.setHeader("CURRENT_INTENTION");
+                        const content = {
+                            predicate: intention.predicate,
+                            args: intention.get_args()
+                        }
+                        msg.setContent(content);
+                        client.say(this.#me.friendId, msg);
                     }
-                    msg.setContent(content);
-                    client.say(this.#me.friendId, msg);
                 }
+                this.#me.setCurrentIntention(intention);
                 // Start achieving intention
                 await intention.achieve()
                     // Catch eventual error and continue

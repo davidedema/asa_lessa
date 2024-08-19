@@ -55,7 +55,7 @@ class Grid {
         for (let key in this.#agentMap) {
             returnArray.push(this.#agentMap[key]);
         }
-        
+
         return returnArray;
     }
 
@@ -111,45 +111,40 @@ class Grid {
         }
     }
 
-    getPossibleDirection(x,y){
+    getPossibleDirection(x, y) {
 
         const tmpAgentMap = this.getAgentMap();
 
         const now = Date.now();
 
         let directions = [];
-        if ( x > 0 && this.get(x-1,y) != 0){
-            directions.push({x: x-1, y: y, name: "left"});
+        if (x > 0 && this.get(x - 1, y) !== undefined && this.get(x - 1, y) !== 0) {
+            directions.push({ x: x - 1, y: y, name: "left" });
         }
-        if ( x < this.width && this.get(x+1,y) != 0){
-            directions.push({x: x+1, y: y, name: "right"});
+        if (x < this.width && this.get(x + 1, y) !== undefined && this.get(x + 1, y) !== 0) {
+            directions.push({ x: x + 1, y: y, name: "right" });
         }
-        if ( y > 0 && this.get(x,y-1) != 0){
-            directions.push({x: x, y: y-1, name: "down"});
+        if (y > 0 && this.get(x, y - 1) !== undefined && this.get(x, y - 1) !== 0) {
+            directions.push({ x: x, y: y - 1, name: "down" });
         }
-        if ( y < this.height && this.get(x,y+1) != 0){
-            directions.push({x: x, y: y+1, name: "up"});
+        if (y < this.height && this.get(x, y + 1) !== undefined && this.get(x, y + 1) !== 0) {
+            directions.push({ x: x, y: y + 1, name: "up" });
         }
 
         const realDirections = [];
-        for(let i = 0; i < directions.length; i++){
+        for (let i = 0; i < directions.length; i++) {
             let free = true
-            for(let j=0; j < tmpAgentMap.length; j++){
+            for (let j = 0; j < tmpAgentMap.length; j++) {
                 // if( tmpAgentMap[j].x === directions[i].x &&  tmpAgentMap[j].y === directions[i].y && now -  tmpAgentMap[j].time < 2000){
-                if( tmpAgentMap[j].x === directions[i].x &&  tmpAgentMap[j].y === directions[i].y ){
+                if (tmpAgentMap[j].x === directions[i].x && tmpAgentMap[j].y === directions[i].y) {
                     free = false;
                     break;
                 }
             }
-            if(free){
+            if (free) {
                 realDirections.push(directions[i]);
             }
         }
-
-        
-        console.log("-----------------------------------------")
-        console.log(realDirections)
-        console.log("-----------------------------------------")
 
         return realDirections;
     }
