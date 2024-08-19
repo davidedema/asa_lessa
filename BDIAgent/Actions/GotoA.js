@@ -1,6 +1,7 @@
 import Plan from "../Plan.js";
 import client from "../client.js";
 import { astar, Graph } from '../astar.js';
+import Msg from "../Msg.js";
 
 class GotoA extends Plan {
 
@@ -21,24 +22,29 @@ class GotoA extends Plan {
                 if (best.get_predicate() !== father_desire ) {
                     throw ['FIND ANOTHER INTENTION ', x, y];
                 }
-                // if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
-                //     throw ['FIND ANOTHER INTENTION ', x, y];
-                // }
                 else if (father_desire === "go_pick_up") {
                     const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
                     if (best_position.x != end.x || best_position.y != end.y) {
                         throw ['FIND ANOTHER INTENTION ', x, y];
                     }
                 }
+                // if(me.friendId){
+                //     let msg = new Msg();
+                //     msg.setHeader("CURRENT_INTENTION");
+                //     const content = {
+                //         predicate: best.get_predicate(),
+                //         args: best.get_args()
+                //     }
+                //     msg.setContent(content);
+                //     client.say(me.friendId,msg);
+                // }
             }
 
             x = result[i].x;
             y = result[i].y;
-            // console.log('moving to', x, y);
             let status_x = undefined;
             let status_y = undefined;
 
-            // console.log('me', me);
 
             if (x > me.x)
                 status_x = await client.move('right')
@@ -69,14 +75,21 @@ class GotoA extends Plan {
                 for (const agent of agentMap) {
                     if (agent.x == x && agent.y == y) {
                         console.log('stucked with agent', agent.id);
+                        if (agent.id === me.friendId) {
+                            me.stuckedFriend = true
+                            console.log('stucked with my Friend');
+                            let msg = new Msg();
+                            msg.setHeader("STUCKED_TOGETHER");
+                            msg.setContent(grid.getPossibleDirection(me.x, me.y));
+                            await client.say(me.friendId, msg);
+                            break;
+                        }
                         break;
                     }
                 }
                 console.log('stucked');
 
                 throw ['stucked', x, y];
-            } else if (me.x == x && me.y == y) {
-                // console.log('target reached')
             }
 
             // if some parcels are in the way, pick them up

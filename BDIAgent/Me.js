@@ -11,7 +11,9 @@ class Me {
         this.pddl = process.argv[2] === 'pddl';
         this.master = process.argv[3] === 'master';
         this.friendId = undefined;
+        this.currentIntention = undefined;
         this.friendIntention = undefined;
+        this.stuckedFriend = false;
         this.strategy =  process.argv[4] || "default";
         this.splitMapZone = undefined
     }
@@ -22,6 +24,10 @@ class Me {
 
     set number_of_parcels_carried(value) {
         this._number_of_parcels_carried = value;
+    }
+
+    setCurrentIntention(intention) {
+        this.currentIntention = intention;
     }
 
     setSplitMapZone(zone){

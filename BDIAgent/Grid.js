@@ -5,7 +5,7 @@ class Grid {
 
     #map;
     #deliverPoints = [];
-    #agentMap = [];
+    #agentMap = {};
 
     constructor(width, height) {
         this.width = width
@@ -45,11 +45,18 @@ class Grid {
     }
 
     setAgent(id, x, y, time) {
-        this.#agentMap.push({ id: id, x: x, y: y, time: time });
+        this.#agentMap[id] = { id: id, x: x, y: y, time: time };
+        // this.#agentMap = this.#agentMap.filter(agent => agent.id !== id);
+        // this.#agentMap.push({ id: id, x: x, y: y, time: time });
     }
 
     getAgentMap() {
-        return this.#agentMap;
+        let returnArray = [];
+        for (let key in this.#agentMap) {
+            returnArray.push(this.#agentMap[key]);
+        }
+
+        return returnArray;
     }
 
     get(x, y) {
@@ -59,9 +66,9 @@ class Grid {
     getMap() {
 
 
-
+        let tmpAgentMap = this.getAgentMap();
         // Filter and remove agents that haven't been seen for 10 seconds
-        this.#agentMap = this.#agentMap.filter(agent => {
+        tmpAgentMap = tmpAgentMap.filter(agent => {
             return agent.time >= Date.now() - 10000;
         });
 
@@ -102,6 +109,44 @@ class Grid {
             }
             console.log(row);
         }
+    }
+
+    getPossibleDirection(x, y) {
+
+        const tmpAgentMap = this.getAgentMap();
+
+        const now = Date.now();
+
+        let directions = [];
+        if (x > 0 && this.get(x - 1, y) !== undefined && this.get(x - 1, y) !== 0) {
+            directions.push({ x: x - 1, y: y, name: "left" });
+        }
+        if (x < this.width && this.get(x + 1, y) !== undefined && this.get(x + 1, y) !== 0) {
+            directions.push({ x: x + 1, y: y, name: "right" });
+        }
+        if (y > 0 && this.get(x, y - 1) !== undefined && this.get(x, y - 1) !== 0) {
+            directions.push({ x: x, y: y - 1, name: "down" });
+        }
+        if (y < this.height && this.get(x, y + 1) !== undefined && this.get(x, y + 1) !== 0) {
+            directions.push({ x: x, y: y + 1, name: "up" });
+        }
+
+        const realDirections = [];
+        for (let i = 0; i < directions.length; i++) {
+            let free = true
+            for (let j = 0; j < tmpAgentMap.length; j++) {
+                // if( tmpAgentMap[j].x === directions[i].x &&  tmpAgentMap[j].y === directions[i].y && now -  tmpAgentMap[j].time < 2000){
+                if (tmpAgentMap[j].x === directions[i].x && tmpAgentMap[j].y === directions[i].y) {
+                    free = false;
+                    break;
+                }
+            }
+            if (free) {
+                realDirections.push(directions[i]);
+            }
+        }
+
+        return realDirections;
     }
 
 }

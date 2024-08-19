@@ -41,8 +41,6 @@ class BlindMove extends Plan {
             if (!status_x && !status_y) {
                 // console.log('stucked')
                 break;
-            } else if (me.x == x && me.y == y) {
-                // console.log('target reached')
             }
 
         }

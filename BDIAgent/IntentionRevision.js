@@ -47,6 +47,16 @@ class IntentionRevisionAgent {
         this.#intention_queue = value;
     }
 
+    #priority_queue = new Array();
+
+    get priority_queue() {
+        return this.#priority_queue;
+    }
+
+    set priority_queue(value) {
+        this.#priority_queue = value;
+    }
+
     get_parcerls_to_pickup() {
 
         const parcels = new Array();
@@ -74,6 +84,7 @@ class IntentionRevisionAgent {
     }
 
     select_best_intention() {
+
         const split_move = this.intention_queue.filter(intention => intention.predicate === 'go_to_astar');
         if (split_move.length > 0) {
             console.log("SPLIT MOVE")
@@ -96,11 +107,22 @@ class IntentionRevisionAgent {
         const go_pick_up_intentions = this.intention_queue.filter(intention => {
             if (intention.predicate === 'go_pick_up') {
 
-                if(this.me.friendId){
+                if (this.me.friendId) {
                     if (this.me.friendIntention) {
                         if (this.me.friendIntention.predicate === 'go_pick_up' && this.me.friendIntention.args[0].id === intention.get_args()[0].id) {
-                            console.log("NOT CONSIDERING", intention.get_args()[0].id)
-                            return false;
+                            const graph = new Graph(this.#grid.getMap());
+                            let start = graph.grid[Math.floor(this.me.x)][Math.floor(this.me.y)];
+                            const end = graph.grid[intention.get_args()[0].x][intention.get_args()[0].y];
+                            const myDistance = astar.search(graph, start, end).length;
+                            start = graph.grid[Math.floor(this.me.friendIntention.args[2].x)][Math.floor(this.me.friendIntention.args[2].y)];
+                            const friendDistance = astar.search(graph, start, end).length;
+                            if (friendDistance < myDistance) {
+                                console.log("NOT CONSIDERING", intention.get_args()[0].id)
+                                return false;
+                            }else{
+                                console.log("CONSIDERING I'M NEAR")
+                            }
+
                         }
                     }
                 }
@@ -114,7 +136,7 @@ class IntentionRevisionAgent {
                 // if there is a decay calculate how much is the actual reward of the parcels
                 if (this.me.decay !== 0) {
                     reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * 1 / this.me.decay));
-                }else{
+                } else {
                     reward = parcel.reward
                 }
                 // for now we are not interested since we don't gain any point
@@ -159,23 +181,47 @@ class IntentionRevisionAgent {
     }
 
     async loop() {
+        let streak_stucked = 0;
         while (true) {
+            if(streak_stucked > 10){
+                streak_stucked = 0 ;
+                this.#me.stuckedFriend = false;
+            }
 
-            // Consumes intention_queue if not empty
-            const intention = this.select_best_intention();
+            if (this.#me.stuckedFriend) { 
+                new Promise(resolve => setTimeout(resolve, 1000));
+                streak_stucked++;
+                continue;
 
+            }
+
+            let intention;
+            let priority_intention = false;
+
+            if (this.#priority_queue.length > 0) {
+                intention = this.#priority_queue[0];
+                priority_intention = true;
+
+            } else {
+                // Consumes intention_queue if not empty
+                intention = this.select_best_intention();
+            }
 
             if (intention) {
-                console.log("intention selected", intention.get_predicate());
-                let msg = new Msg();
-                msg.setHeader("CURRENT_INTENTION");
-                const content = {
-                    predicate: intention.predicate,
-                    args: intention.get_args()
+                console.log("INTENTION", intention.predicate)
+                if (this.#me.friendId) {
+                    if (intention.predicate !== 'random_move') {
+                        let msg = new Msg();
+                        msg.setHeader("CURRENT_INTENTION");
+                        const content = {
+                            predicate: intention.predicate,
+                            args: intention.get_args()
+                        }
+                        msg.setContent(content);
+                        client.say(this.#me.friendId, msg);
+                    }
                 }
-                msg.setContent(content);
-                client.shout(msg);
-
+                this.#me.setCurrentIntention(intention);
                 // Start achieving intention
                 await intention.achieve()
                     // Catch eventual error and continue
@@ -184,17 +230,23 @@ class IntentionRevisionAgent {
                         // console.log('Failed intention', intention.predicate, 'with error:', error)
                     }).finally(() => {
                         // Remove intention from queue
-                        this.intention_queue = this.intention_queue.filter(i => i !== intention);
+                        if (!priority_intention) {
+                            this.intention_queue = this.intention_queue.filter(i => i !== intention);
+                        } else {
+                            this.#priority_queue = this.#priority_queue.filter(i => i !== intention);
+                        }
                         // If we have picked up a parcel, we can notify to the friend agent
                         if (intention.predicate === 'go_pick_up') {
-                            let msg = new Msg();
-                            msg.setHeader("COMPLETED_INTENTION");
-                            const content = {
-                                predicate: intention.predicate,
-                                args: intention.get_args()
+                            if (this.#me.friendId) {
+                                let msg = new Msg();
+                                msg.setHeader("COMPLETED_INTENTION");
+                                const content = {
+                                    predicate: intention.predicate,
+                                    args: intention.get_args()
+                                }
+                                msg.setContent(content);
+                                client.say(this.#me.friendId, msg);
                             }
-                            msg.setContent(content);
-                            client.shout(msg);
                         }
                     });
             }
@@ -211,6 +263,14 @@ class IntentionRevisionAgent {
 
 class IntentionRevisionRevise extends IntentionRevisionAgent {
 
+    async push_priority_action(predicate, ...args) {
+        let father_desire = "";
+        if (predicate === "go_to_astar") {
+            father_desire = "SPLIT"
+        }
+        this.priority_queue.push(new Intention(this, "priority_action", predicate, ...args));
+    }
+
     async push(predicate, ...args) {
         let father_desire = "";
         if (predicate === "go_to_astar") {
@@ -226,15 +286,15 @@ class IntentionRevisionRevise extends IntentionRevisionAgent {
 
             if (intention.predicate !== 'go_pick_up') {
                 return true;
-            }else{
+            } else {
                 if (intention.args[0].id !== i.get_args()[0].id) {
                     return true;
-                }else{
+                } else {
                     console.log("ERASED INTENTION", intention.args[0].id)
                     return false;
                 }
             }
-            }
+        }
         );
     }
 
