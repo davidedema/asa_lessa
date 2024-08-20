@@ -81,6 +81,9 @@ myAgent.loop();
 */
 
 function agentLoop(perceived_parcels) {
+
+    const parcelsToNotify = []
+
     if (perceived_parcels.length == 0) return;
     let time = Date.now();
     for (const p of perceived_parcels) {
@@ -94,13 +97,6 @@ function agentLoop(perceived_parcels) {
         }
     }
 
-    // if i have a friend, i can send him the perceived parcels
-    if (me.strategy !== "split_map" && me.friendId && perceived_parcels.length > 0) {
-        let msg = new Msg();
-        msg.setHeader("INFO_PARCELS");
-        msg.setContent(perceived_parcels);
-        client.say(me.friendId, msg);
-    }
 
     // update parcels carried
     let i = 0;
@@ -110,40 +106,28 @@ function agentLoop(perceived_parcels) {
         }
     }
     me._number_of_parcels_carried = i;
-    // console.log('number of parcels carried', me._number_of_parcels_carried)
-    /**
-     * Options
-    */
+
     const seenParcels = myAgent.get_parcerls_to_pickup();
     const options = [];
     for (const parcel of parcels.values()) {
         if (!parcel.carriedBy && !seenParcels.includes(parcel.id)) {
             options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
+            parcelsToNotify.push(parcel);
         }
     }
 
+    // if i have a friend, i can send him the perceived parcels
+    if (me.strategy !== "split_map" && me.friendId && parcelsToNotify.length > 0) {
+        let msg = new Msg();
+        msg.setHeader("INFO_PARCELS");
+        msg.setContent(parcelsToNotify);
+        client.say(me.friendId, msg);
+    }
 
-    /**
-     * Select best intention
-    */
-    let best_option;
-    let nearest = Number.MAX_VALUE;
     for (const option of options) {
-        let current_i = option.desire
-        let current_d = distance(option.args[0], me)
-        if (current_i == 'go_pick_up' && current_d < nearest) {
-            best_option = option
-            nearest = current_d
-        }
-    }
+        myAgent.push(option.desire, ...option.args)
 
-    /**
-     * Revise/queue intention 
-    */
-    if (best_option) {
-        myAgent.push(best_option.desire, ...best_option.args)
     }
-
 
 }
 
@@ -195,12 +179,15 @@ client.onMap((height, width, map) => {
 client.onConfig((config) => {
     if (config.PARCEL_DECADING_INTERVAL != 'infinite') {
         // from string to int
-        var decay = parseInt(config.PARCEL_DECADING_INTERVAL.slice(0, -1));
-        me.decay = decay;
+        var pointLossInOneSecond = parseInt(config.PARCEL_DECADING_INTERVAL.slice(0, -1));
+        me.pointLossInOneSecond = pointLossInOneSecond;
     }
     // TODO change this one
     else {
-        me.decay = NaN;
+        me.pointLossInOneSecond = NaN;
+    }
+    if (config['MOVEMENT_DURATION']) {
+        me.movementDuration = config['MOVEMENT_DURATION'];
     }
 });
 
@@ -285,11 +272,17 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
     // parcels
     if (msg.header === 'INFO_PARCELS') {
         // see content and update the parcels if not already present
+        const seenParcels = myAgent.get_parcerls_to_pickup();
         let new_parcels = msg.content;
-        for (const p of new_parcels) {
-            if (!parcels.has(p.id)) {
-                parcels.set(p.id, p);
+        const options = [];
+        for (const parcel of new_parcels) {
+            if (!parcel.carriedBy && !seenParcels.includes(parcel.id)) {
+                options.push({ desire: 'go_pick_up', args: [parcel, grid, me] });
             }
+        }
+
+        for (const option of options) {
+            myAgent.push(option.desire, ...option.args)
         }
 
     } else if (msg.header === 'INFO_AGENTS') {
@@ -329,6 +322,14 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         console.log(msg.content)
     } else if (msg.header === "CURRENT_INTENTION") {
         me.friendIntention = msg.content
+        if (me.currentIntention && me.friendIntention && me.currentIntention.predicate === "go_pick_up" && me.friendIntention.predicate === "go_pick_up") {
+            if(me.currentIntention.get_args()[0].id === me.friendIntention.args[0].id){
+                console.log("-----------------------")
+                console.log("Friend intention: ", msg.content.args[0].id)
+                console.log("My intention: ", me.currentIntention.get_args()[0].id)
+                console.log("-----------------------")
+            }
+        }
     } else if (msg.header === "COMPLETED_INTENTION") {
         // console.log("COMPLETED INTENTION", msg.content)
         myAgent.erase(msg.content)
@@ -389,6 +390,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 console.log("send leave parcels and move")
             }
         } else {
+            await client.move(possibleDirection[0].name)
             me.stuckedFriend = false;
             let newmsg = new Msg();
             newmsg.setHeader("STUCK_RESOLVED");
@@ -441,6 +443,8 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         newmsg.setHeader("PICK_UP_PARCELS_AND_PUT_DOWN");
         newmsg.setContent({ direction: getOppositeDirection(direction) })
         await client.say(id, newmsg)
+    } else if (msg.header === "CURRENT_POSITION") {
+        me.friendPosition = msg.content;
     }
 }
 

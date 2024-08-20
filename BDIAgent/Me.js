@@ -7,12 +7,14 @@ class Me {
         this.score = undefined;
         this.carring = false;
         this._number_of_parcels_carried = 0;
-        this.decay = undefined;
+        this.pointLossInOneSecond = undefined;
+        this.movementDuration = undefined;
         this.pddl = process.argv[2] === 'pddl';
         this.master = process.argv[3] === 'master';
         this.friendId = undefined;
         this.currentIntention = undefined;
         this.friendIntention = undefined;
+        this.friendPosition = undefined;
         this.stuckedFriend = false;
         this.strategy =  process.argv[4] || "default";
         this.splitMapZone = undefined

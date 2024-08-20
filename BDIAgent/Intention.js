@@ -57,11 +57,16 @@ class Intention {
         return this.#stopped;
     }
 
+    set stopped(value) {
+        this.#stopped = value;
+    }
+
     print() {
         console.log('Intention', this.#predicate, this.#args, this.#utility);
     }
 
     stop() {
+        this.#started = false
         this.#stopped = true;
         if (this.#current_plan)
             this.#current_plan.stop();
@@ -111,15 +116,16 @@ class Intention {
             console.log(...args)
     }
 
-    get_utility(num_parcels_carried, _start = null) {
+    get_utility(num_parcels_carried,movementDuration, _start = null) {
         let time_now = Date.now();
         const parcel = this.#args[0];
-        let decay = parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0, -1));
+        let pointLossInOneSecond = 1/parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0, -1));
+        const stepInOneSecond = 1000 / movementDuration; // should be correct but movement duration dose not correspond to the effective time that the agent need to move
         let reward;
-        if (isNaN(decay)){
+        if (isNaN(pointLossInOneSecond)) {
             reward = parcel.reward;
-        }else{
-            reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * 1 / decay));
+        } else {
+            reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) *  pointLossInOneSecond / stepInOneSecond));
         }
 
         const me = this.#args[2];
@@ -151,10 +157,15 @@ class Intention {
         //            - (punti che decadono riguardanti le parcelle che sto gia traspoartando mentre vado a prendere la nuova parcella)
         //           - (punti che decadono riguardanti le parcelle che sto gia traspoartando e quella nuova mentre vado a consegnare la nuova parcella)
         let utility;
-        if(isNaN(decay)){
-            utility = reward;
-        }else{
-            utility = reward - (path_length  * 1 / decay)  - (num_parcels_carried * path_length  * 1 / decay) - ((num_parcels_carried + 1) * deliery_path_length  * 1 / decay)// * (1 / parseFloat(config['PARCEL_DECADING_INTERVAL'].slice(0,-1)));
+        if (isNaN(pointLossInOneSecond)) {
+            // distance cost is a small number that enables to give the right priority to the parcels that are near to the agent
+            // if the reward of all the parcels is equal the agent will prefer the nearest one, but if the distance cost is 0,
+            // and so the utility is equal to the reward. If the utility is the same of the reward and all the parcels has the same reward
+            // the agent will pick up the parcel in the order that it has seen them
+            const distance_cost = 0.01;
+            utility = reward - (path_length * distance_cost) - (num_parcels_carried * path_length * distance_cost) - ((num_parcels_carried + 1) * deliery_path_length * distance_cost);
+        } else {
+            utility = reward - (path_length * pointLossInOneSecond / stepInOneSecond) - (num_parcels_carried * path_length *  pointLossInOneSecond / stepInOneSecond) - ((num_parcels_carried + 1) * deliery_path_length *  pointLossInOneSecond / stepInOneSecond)
         }
         if (path_length === 0 && (start.x !== end.x || start.y !== end.y)) { utility = -Infinity; }
         if (deliery_path_length === 0 && deliveryPoint.x !== end.x && deliveryPoint.y !== end.y) { utility = -Infinity; }
@@ -168,10 +179,10 @@ class Intention {
      */
     async achieve() {
         // Cannot start twice
-        if (this.#started)
-            return this;
-        else
-            this.#started = true;
+        // if (this.#started)
+        //     return this;
+        // else
+        //     this.#started = true;
 
         // Trying all plans in the library
         for (const planClass of plans) {

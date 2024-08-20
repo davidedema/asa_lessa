@@ -9,17 +9,30 @@ class GotoA extends Plan {
         return desire == 'go_to_astar';
     }
 
-    async execute(intentionRevision, father_desire,{ x, y }, grid, me) {
+    async execute(intentionRevision, father_desire, { x, y }, grid, me) {
 
         const graph = new Graph(grid.getMap());
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
 
+        let time_before = Date.now();
+
         for (let i = 0; i < result.length; i++) {
-            if(father_desire !== "SPLIT"){
+
+
+            // since the movement duration is not the same that is given by the config 
+            // calculate the effective movement duration in order to use it in the utility function
+            if (i > 0) {
+                let movementDuration = Date.now() - time_before;
+                me.movementDuration = (me.movementDuration + movementDuration) / 2;
+            }
+            time_before = Date.now();
+
+
+            if (father_desire !== "SPLIT") {
                 const best = intentionRevision.select_best_intention()
-                if (best.get_predicate() !== father_desire ) {
+                if (best.get_predicate() !== father_desire) {
                     throw ['FIND ANOTHER INTENTION ', x, y];
                 }
                 else if (father_desire === "go_pick_up") {
@@ -90,10 +103,17 @@ class GotoA extends Plan {
                 console.log('stucked');
 
                 throw ['stucked', x, y];
+            } else {
+                if (me.friendId) {
+                    let msg = new Msg();
+                    msg.setHeader("CURRENT_POSITION");
+                    msg.setContent({ x: me.x, y: me.y });
+                    client.say(me.friendId, msg);
+                }
             }
-
             // if some parcels are in the way, pick them up
             await client.pickup();
+
         }
     }
 
