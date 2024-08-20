@@ -179,10 +179,10 @@ class Intention {
      */
     async achieve() {
         // Cannot start twice
-        // if (this.#started)
-        //     return this;
-        // else
-        //     this.#started = true;
+        if (this.#started)
+            return this;
+        else
+            this.#started = true;
 
         // Trying all plans in the library
         for (const planClass of plans) {
