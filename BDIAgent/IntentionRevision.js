@@ -341,12 +341,7 @@ class IntentionRevisionAgent {
 
                             // Remove intention from queue
                             if (!priority_intention) {
-                                console.log("-----------------------------------")
-                                console.log(this.intention_queue.length)
                                 this.intention_queue = this.intention_queue.filter(i => i.get_args()[0].id !== intention.get_args()[0].id);
-                                console.log(this.intention_queue.length)
-                                console.log("-----------------------------------")
-
                             } else {
                                 this.#priority_queue = this.#priority_queue.filter(i => i.get_args()[0].id !== intention.get_args()[0].id);
                             }

@@ -34,13 +34,11 @@ class GotoA extends Plan {
             if (father_desire === "go_put_down" || father_desire === "go_pick_up" || father_desire === "random_move" ) {
                 const best = intentionRevision.select_best_intention()
                 if (best.get_predicate() !== father_desire) {
-                    console.log('FIND ANOTHER INTENTION ',best.get_predicate(),best.get_args()[0]);
                     throw ['FIND ANOTHER INTENTION ', x, y];
                 }
                 else if (father_desire === "go_pick_up") {
                     const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
                     if (best_position.x != end.x || best_position.y != end.y) {
-                        console.log('FIND ANOTHER INTENTION ',best);
                         throw ['FIND ANOTHER INTENTION ', best.get_predicate(),best.get_args()[0]];
                     }
                 }
@@ -79,14 +77,6 @@ class GotoA extends Plan {
                         console.log('stucked with agent', agent.id);
                         if (agent.id === me.friendId && me.name === "slave" && !me.stuckedFriend ) {
                             me.stuckedFriend = true
-                            console.log('stucked with my Friend');
-                            let msg = new Msg();
-                            msg.setHeader("STUCKED_TOGETHER");
-                            const content = { direction: grid.getPossibleDirection(me.x, me.y), path: result, reachablePoint: grid.getReachablePoints(me.x, me.y) }
-                            msg.setContent(content);
-                            await client.say(me.friendId, msg);
-                            break;
-                        }else if(agent.id === me.friendId && me.name === "master") {
                             console.log('stucked with my Friend');
                             let msg = new Msg();
                             msg.setHeader("STUCKED_TOGETHER");

@@ -369,10 +369,10 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 msg.setContent(content)
                 await client.say(id, msg)
             } else if (me.friendIntention.predicate === "go_put_down" && friendDirection.length === 0) {
-                await client.move(friendDirection[0].name)
+                await client.move(possibleDirection[0].name)
                 let newmsg = new Msg();
                 newmsg.setHeader("MOVE_AND_LEAVE_PARCELS_AND_MOVE");
-                const content = { direction: friendDirection[0].name }
+                const content = { direction: possibleDirection[0].name }
                 newmsg.setContent(content)
                 await client.say(id, newmsg)
             } else if (possibleDirection.length === 0) {
@@ -431,17 +431,18 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             }
         }
     } else if (msg.header === "STUCKED_TOGETHER" && me.name === "slave") {
-        // if (me.stuckedFriend) {
-        //     return;
-        // }
+        // se entra qui vuol dire che il messaggio l'ha madnato il master
+        if (me.stuckedFriend) {
+            return;
+        }
         
-        // const possibleDirection = grid.getPossibleDirection(me.x, me.y)
-        // if (possibleDirection.length === 0) {
-        //     let newmsg = new Msg()
-        //     newmsg.setHeader("STUCKED_TOGETHER")
-        //     newmsg.setContent(possibleDirection)
-        //     await client.say(id, newmsg)
-        // }
+        const content = { direction: grid.getPossibleDirection(me.x, me.y), path: [], reachablePoint: grid.getReachablePoints(me.x, me.y) }
+        if (possibleDirection.length === 0) {
+            let newmsg = new Msg()
+            newmsg.setHeader("STUCKED_TOGETHER")
+            newmsg.setContent(possibleDirection)
+            await client.say(id, newmsg)
+        }
     } else if (msg.header === "PICK_UP_PARCELS_AND_PUT_DOWN") {
         console.log("PICK UP PARCELS AND PUT DOWN")
         const direction = msg.content.direction;
