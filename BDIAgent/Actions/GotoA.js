@@ -34,24 +34,16 @@ class GotoA extends Plan {
             if (father_desire === "go_put_down" || father_desire === "go_pick_up" || father_desire === "random_move" ) {
                 const best = intentionRevision.select_best_intention()
                 if (best.get_predicate() !== father_desire) {
+                    console.log('FIND ANOTHER INTENTION ',best.get_predicate(),best.get_args()[0]);
                     throw ['FIND ANOTHER INTENTION ', x, y];
                 }
                 else if (father_desire === "go_pick_up") {
                     const best_position = { x: best.get_args()[0].x, y: best.get_args()[0].y }
                     if (best_position.x != end.x || best_position.y != end.y) {
-                        throw ['FIND ANOTHER INTENTION ', x, y];
+                        console.log('FIND ANOTHER INTENTION ',best);
+                        throw ['FIND ANOTHER INTENTION ', best.get_predicate(),best.get_args()[0]];
                     }
                 }
-                // if(me.friendId){
-                //     let msg = new Msg();
-                //     msg.setHeader("CURRENT_INTENTION");
-                //     const content = {
-                //         predicate: best.get_predicate(),
-                //         args: best.get_args()
-                //     }
-                //     msg.setContent(content);
-                //     client.say(me.friendId,msg);
-                // }
             }
 
             x = result[i].x;
@@ -62,10 +54,8 @@ class GotoA extends Plan {
 
             if (x > me.x)
                 status_x = await client.move('right')
-            // status_x = await this.subIntention( 'go_to', {x: me.x+1, y: me.y} );
             else if (x < me.x)
                 status_x = await client.move('left')
-            // status_x = await this.subIntention( 'go_to', {x: me.x-1, y: me.y} );
 
             if (status_x) {
                 me.x = status_x.x;
@@ -74,10 +64,8 @@ class GotoA extends Plan {
 
             if (y > me.y)
                 status_y = await client.move('up')
-            // status_x = await this.subIntention( 'go_to', {x: me.x, y: me.y+1} );
             else if (y < me.y)
                 status_y = await client.move('down')
-            // status_x = await this.subIntention( 'go_to', {x: me.x, y: me.y-1} );
 
             if (status_y) {
                 me.x = status_y.x;
@@ -98,11 +86,18 @@ class GotoA extends Plan {
                             msg.setContent(content);
                             await client.say(me.friendId, msg);
                             break;
+                        }else if(agent.id === me.friendId && me.name === "master") {
+                            console.log('stucked with my Friend');
+                            let msg = new Msg();
+                            msg.setHeader("STUCKED_TOGETHER");
+                            const content = { direction: grid.getPossibleDirection(me.x, me.y), path: result, reachablePoint: grid.getReachablePoints(me.x, me.y) }
+                            msg.setContent(content);
+                            await client.say(me.friendId, msg);
+                            break;
                         }
                         break;
                     }
                 }
-                // console.log('stucked');
 
                 throw ['stucked', x, y];
             } else {

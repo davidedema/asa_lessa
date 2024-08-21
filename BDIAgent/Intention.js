@@ -92,12 +92,22 @@ class Intention {
     #args;
     #utility;
     #father_desire;
+    #time;
 
     constructor(parent, father_desire, predicate, ...args) {
         this.#parent = parent;
         this.#father_desire = father_desire;
         this.#predicate = predicate;
         this.#args = args;
+        this.time = Date.now();
+    }
+
+    get time() {
+        return this.#time;
+    }
+
+    set time(value) {
+        this.#time = value;
     }
 
     get_args() {

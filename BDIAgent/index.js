@@ -319,14 +319,14 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         console.log(msg.content)
     } else if (msg.header === "CURRENT_INTENTION") {
         me.friendIntention = msg.content
-        if (me.currentIntention && me.friendIntention && me.currentIntention.predicate === "go_pick_up" && me.friendIntention.predicate === "go_pick_up") {
-            if (me.currentIntention.get_args()[0].id === me.friendIntention.args[0].id) {
-                console.log("-----------------------")
-                console.log("Friend intention: ", msg.content.args[0].id)
-                console.log("My intention: ", me.currentIntention.get_args()[0].id)
-                console.log("-----------------------")
-            }
-        }
+        // if (me.currentIntention && me.friendIntention && me.currentIntention.predicate === "go_pick_up" && me.friendIntention.predicate === "go_pick_up") {
+        //     if (me.currentIntention.get_args()[0].id === me.friendIntention.args[0].id) {
+        //         console.log("-----------------------")
+        //         console.log("Friend intention: ", msg.content.args[0].id)
+        //         console.log("My intention: ", me.currentIntention.get_args()[0].id)
+        //         console.log("-----------------------")
+        //     }
+        // }
     } else if (msg.header === "COMPLETED_INTENTION") {
         // console.log("COMPLETED INTENTION", msg.content)
         myAgent.erase(msg.content)
@@ -434,6 +434,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         // if (me.stuckedFriend) {
         //     return;
         // }
+        
         // const possibleDirection = grid.getPossibleDirection(me.x, me.y)
         // if (possibleDirection.length === 0) {
         //     let newmsg = new Msg()

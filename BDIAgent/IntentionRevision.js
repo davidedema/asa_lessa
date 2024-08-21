@@ -17,12 +17,21 @@ class IntentionRevisionAgent {
     #grid;
     #me;
     #running;
+    #parcel_taken = new Array();
 
-    set running(value){
+    get parcel_taken(){
+        return this.#parcel_taken;
+    }
+
+    set parcel_taken(value){
+        this.#parcel_taken = value;
+    }
+
+    set running(value) {
         this.#running = value
     }
 
-    get running(){
+    get running() {
         return this.#running;
     }
 
@@ -91,6 +100,46 @@ class IntentionRevisionAgent {
         return parcels
     }
 
+    check_duplicate() {
+        const pos = new Array()
+        this.intention_queue.forEach((intention, index) => {
+            if (intention.predicate === 'go_pick_up') {
+                if (pos.includes(`${intention.get_args()[0].x},${intention.get_args()[0].y}`)) {
+                    console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+                } else {
+                    pos.push(`${intention.get_args()[0].x},${intention.get_args()[0].y}`)
+                }
+            }
+        })
+
+    }
+
+    clear_intention() {
+        // const pos = {}
+        // //create a new dictionary 
+
+        // this.intention_queue.forEach((intention, index) => {
+        //     if (intention.predicate === 'go_pick_up') {
+        //         const position = `${intention.get_args()[0].x},${intention.get_args()[0].y}`
+        //         if (Object.keys(pos).includes(position)) {
+        //             console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+        //             if ()
+        //         } else {
+        //             pos[]
+        //         }
+        //     }
+        // })
+        const now = Date.now();
+
+        // this.intention_queue = this.intention_queue.filter(intention => {
+        //     if(intention.predicate !== "go_pick_up"){
+        //         return true
+        //     }else{
+        //         if(now - intention.time < intention.get_args()[0].re)
+        //     }
+        // })
+    }
+
     remove(parcel) {
         this.intention_queue = this.intention_queue.filter(intention => {
             if (intention.predicate == 'go_pick_up') {
@@ -112,7 +161,7 @@ class IntentionRevisionAgent {
             return split_move[0];
         }
 
-        
+
 
         if (this.intention_queue.length == 0) {
             if (this.me.number_of_parcels_carried > 0) {
@@ -133,9 +182,9 @@ class IntentionRevisionAgent {
         // Sort intentions by priority
         let ordered_intentions = new Array();
 
-        for(let intention of this.intention_queue){
-            if(intention.predicate === 'go_pick_up'){
-                if(this.parcels_picked_up_by_friend.includes(intention.get_args()[0].id)){
+        for (let intention of this.intention_queue) {
+            if (intention.predicate === 'go_pick_up') {
+                if (this.parcels_picked_up_by_friend.includes(intention.get_args()[0].id) || this.parcel_taken.includes(intention.get_args()[0].id)) {
                     this.remove(intention.get_args()[0]);
                 }
             }
@@ -205,13 +254,13 @@ class IntentionRevisionAgent {
         if (go_pick_up_intentions.length > 0) {
             // Sort intentions by utility
             ordered_intentions = go_pick_up_intentions.sort((a, b) => {
-                const utilityA = a.get_utility(this.me.number_of_parcels_carried,this.me.movementDuration)['utility'];
-                const utilityB = b.get_utility(this.me.number_of_parcels_carried,this.me.movementDuration)['utility'];
+                const utilityA = a.get_utility(this.me.number_of_parcels_carried, this.me.movementDuration)['utility'];
+                const utilityB = b.get_utility(this.me.number_of_parcels_carried, this.me.movementDuration)['utility'];
                 return utilityB - utilityA;
             });
             const best_intention = ordered_intentions[0];
 
-            if (best_intention.get_utility(this.me.number_of_parcels_carried,this.me.movementDuration)['utility'] > 0) {
+            if (best_intention.get_utility(this.me.number_of_parcels_carried, this.me.movementDuration)['utility'] > 0) {
                 return best_intention;
             } else if (this.me.number_of_parcels_carried > 0) {
                 return go_put_down_intention;
@@ -228,13 +277,14 @@ class IntentionRevisionAgent {
     async loop() {
         let streak_stucked = 0;
 
-        if(this.running){
+        if (this.running) {
             return;
         }
-        
+
         this.running = true;
         while (true) {
 
+            this.clear_intention()
 
             if (this.#me.stuckedFriend) {
                 this.running = false;
@@ -255,11 +305,15 @@ class IntentionRevisionAgent {
             }
 
             if (intention) {
-                // if (intention.predicate === 'go_pick_up') {
-                //     console.log("INTENTION", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
-                // }else{
-                //     console.log("INTENTION", intention.predicate)
-                // }
+                if (intention.predicate === 'go_pick_up') {
+                    if(this.parcel_taken.includes(intention.get_args()[0].id)){
+                        console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+                        continue;
+                    }
+                    console.log("INTENTION", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
+                } else {
+                    console.log("INTENTION", intention.predicate)
+                }
 
                 if (this.#me.friendId) {
                     if (intention.predicate !== 'random_move') {
@@ -284,14 +338,21 @@ class IntentionRevisionAgent {
                         }
                     }).finally(() => {
                         if (!intention.stopped) {
+
                             // Remove intention from queue
                             if (!priority_intention) {
-                                this.intention_queue = this.intention_queue.filter(i => i !== intention);
+                                console.log("-----------------------------------")
+                                console.log(this.intention_queue.length)
+                                this.intention_queue = this.intention_queue.filter(i => i.get_args()[0].id !== intention.get_args()[0].id);
+                                console.log(this.intention_queue.length)
+                                console.log("-----------------------------------")
+
                             } else {
-                                this.#priority_queue = this.#priority_queue.filter(i => i !== intention);
+                                this.#priority_queue = this.#priority_queue.filter(i => i.get_args()[0].id !== intention.get_args()[0].id);
                             }
                             // If we have picked up a parcel, we can notify to the friend agent
                             if (intention.predicate === 'go_pick_up') {
+                                this.parcel_taken.push(intention.get_args()[0].id);
                                 if (this.#me.friendId) {
                                     let msg = new Msg();
                                     msg.setHeader("COMPLETED_INTENTION");
@@ -323,9 +384,9 @@ class IntentionRevisionAgent {
 
 class IntentionRevisionRevise extends IntentionRevisionAgent {
 
-    async push_priority_action(predicate, ...args) {   
+    async push_priority_action(predicate, ...args) {
         let father_desire = "priority_action"
-        if(predicate === "MOVE_OUT_OF_MY_PATH"){
+        if (predicate === "MOVE_OUT_OF_MY_PATH") {
             predicate = "go_to_astar"
             father_desire = "MOVE_OUT_OF_MY_PATH-priority_action"
         }
@@ -344,7 +405,7 @@ class IntentionRevisionRevise extends IntentionRevisionAgent {
     // method used in order to erase an intention of pick up, is used when a friend say that he has already picked up that parcel
     async erase(intention) {
         this.parcels_picked_up_by_friend.push(intention.args[0].id);
-        console.log("ERASED INTENTION", intention.args[0].id)
+        // console.log("ERASED INTENTION", intention.args[0].id)
 
         // this.intention_queue = this.intention_queue.filter(i => {
 
