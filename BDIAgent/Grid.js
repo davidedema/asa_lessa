@@ -111,6 +111,54 @@ class Grid {
         }
     }
 
+    getReachablePoints(startX, startY) {
+
+        // these method returns the reachable points from a given point
+
+        const matrix = this.getMap();
+
+        const agentMap = this.getAgentMap()
+
+        const agentPosition = new Set();
+
+        for (const agent of agentMap) {
+            agentPosition.add(`${agent.x},${agent.y}`);
+        }
+
+
+        if (matrix[startX][startY] === 0) {
+            return [];
+        }
+
+        const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]; // Down, Up, Right, Left
+        const reachable = [];
+        const rows = matrix.length;
+        const cols = matrix[0].length;
+        const queue = [[startX, startY]];
+        const visited = new Set();
+        visited.add(`${startX},${startY}`);
+
+
+        while (queue.length > 0) {
+            const [currentX, currentY] = queue.shift();
+            reachable.push({ x: currentX, y: currentY });
+
+            for (let direction of directions) {
+                const newX = currentX + direction[0];
+                const newY = currentY + direction[1];
+                const newPos = `${newX},${newY}`;
+
+                if (newX >= 0 && newX < rows && newY >= 0 && newY < cols &&
+                    !visited.has(newPos) && matrix[newX][newY] !== 0 && !agentPosition.has(newPos)) {
+                    queue.push([newX, newY]);
+                    visited.add(newPos);
+                }
+            }
+        }
+
+        return reachable;
+    }
+
     getPossibleDirection(x, y) {
 
         const tmpAgentMap = this.getAgentMap();

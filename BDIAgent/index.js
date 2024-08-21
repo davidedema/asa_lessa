@@ -3,6 +3,7 @@ import Me from "./Me.js";
 import client from "./client.js";
 import IntentionRevisionRevise from "./IntentionRevision.js";
 import Msg from "./Msg.js";
+import { astar, Graph } from './astar.js';
 
 function areDirectionOpposite(direction1, direction2) {
     if (direction1 === "up" && direction2 === "down") {
@@ -26,6 +27,8 @@ function areStuckedInACLosedPath(directions1, directions2) {
         // console.log("Master: ", directions1)
         // console.log("Slave: ", directions2)
         return false;
+    } else if (directions1.length === 1 && directions2.length === 1) {
+        return true;
     }
     else if (directions1.length === 0 || directions2.length === 0) {
         // console.log("Non so che cazzo fare")
@@ -317,7 +320,7 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
     } else if (msg.header === "CURRENT_INTENTION") {
         me.friendIntention = msg.content
         if (me.currentIntention && me.friendIntention && me.currentIntention.predicate === "go_pick_up" && me.friendIntention.predicate === "go_pick_up") {
-            if(me.currentIntention.get_args()[0].id === me.friendIntention.args[0].id){
+            if (me.currentIntention.get_args()[0].id === me.friendIntention.args[0].id) {
                 console.log("-----------------------")
                 console.log("Friend intention: ", msg.content.args[0].id)
                 console.log("My intention: ", me.currentIntention.get_args()[0].id)
@@ -335,12 +338,16 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         // if both are going to pick up parcels they should swap their intention (maybe also their carried parcel but idk)
 
         me.stuckedFriend = true;
-        const friendDirection = msg.content;
+        const friendDirection = msg.content.direction;
+        const friendPath = msg.content.path;
         const possibleDirection = grid.getPossibleDirection(me.x, me.y);
 
         if (areStuckedInACLosedPath(possibleDirection, friendDirection)) {
             if (me.currentIntention.predicate !== "go_put_down" && me.friendIntention.predicate !== "go_put_down") {
-                me.stuckedFriend = false;
+                if(me.stuckedFriend){
+                    me.stuckedFriend = false;
+                    myAgent.loop()
+                }
                 let newmsg = new Msg();
                 newmsg.setHeader("STUCK_RESOLVED");
                 await client.say(id, newmsg)
@@ -371,7 +378,10 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
             } else if (possibleDirection.length === 0) {
                 // otherwise if it will spawn a parcel where is stucked , it can't be able to pick up
                 console.log("Unstack me and my friend")
-                me.stuckedFriend = false;
+                if (me.stuckedFriend) {
+                    me.stuckedFriend = false;
+                    myAgent.loop()
+                }
                 let newmsg = new Msg();
                 newmsg.setHeader("STUCK_RESOLVED");
                 await client.say(id, newmsg)
@@ -384,27 +394,63 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
                 console.log("send leave parcels and move")
             }
         } else {
-            await client.move(possibleDirection[0].name)
-            me.stuckedFriend = false;
-            let newmsg = new Msg();
-            newmsg.setHeader("STUCK_RESOLVED");
-            await client.say(id, newmsg)
+            if(possibleDirection.length >1 ){
+                const reachablePoints = grid.getReachablePoints(me.x, me.y)
+                const reachablePointsNotInFriendPath = []
+                for (let i = 0; i < reachablePoints.length; i++) {
+                    let reachable = false;
+                    for (let j = 0; j < friendPath.length; j++) {
+                        if (reachablePoints[i].x === friendPath[j].x && reachablePoints[i].y === friendPath[j].y) {
+                            reachable = true;
+                            break;
+                        }
+                    }
+                    if (!reachable) {
+                        reachablePointsNotInFriendPath.push(reachablePoints[i])
+                    }
+                }
+                if (reachablePointsNotInFriendPath.length !== 0) {
+                    myAgent.push_priority_action("MOVE_OUT_OF_MY_PATH", reachablePointsNotInFriendPath[0], grid, me)
+                    if(me.stuckedFriend){
+                        me.stuckedFriend = false
+                        myAgent.loop()
+                    }
+                } else {
+                    let msg = new Msg();
+                    msg.setHeader("MOVE_OUT_OF_MY_PATH");
+                    const content = { path: me.currentPath }
+                    msg.setContent(content)
+                    await client.say(id, msg)
+                }
+            }else{
+                let msg = new Msg();
+                msg.setHeader("MOVE_OUT_OF_MY_PATH");
+                const content = { path: me.currentPath }
+                msg.setContent(content)
+                await client.say(id, msg)
+            }
         }
     } else if (msg.header === "STUCKED_TOGETHER" && me.name === "slave") {
-        const possibleDirection = grid.getPossibleDirection(me.x, me.y)
-        if (possibleDirection.length === 0) {
-            let newmsg = new Msg()
-            newmsg.setHeader("STUCKED_TOGETHER")
-            newmsg.setContent(possibleDirection)
-            await client.say(id, newmsg)
-        }
+        // if (me.stuckedFriend) {
+        //     return;
+        // }
+        // const possibleDirection = grid.getPossibleDirection(me.x, me.y)
+        // if (possibleDirection.length === 0) {
+        //     let newmsg = new Msg()
+        //     newmsg.setHeader("STUCKED_TOGETHER")
+        //     newmsg.setContent(possibleDirection)
+        //     await client.say(id, newmsg)
+        // }
     } else if (msg.header === "PICK_UP_PARCELS_AND_PUT_DOWN") {
         console.log("PICK UP PARCELS AND PUT DOWN")
         const direction = msg.content.direction;
         await client.move(direction)
         await client.pickup()
-        me.stuckedFriend = false;
-        myAgent.push_priority_action("go_put_down", [grid, grid.getDeliverPoints(), me])
+        myAgent.push_priority_action("go_put_down", ...[grid, grid.getDeliverPoints(), me])
+        if (me.stuckedFriend) {
+            me.stuckedFriend = false;
+            myAgent.loop()
+        }
         let newmsg = new Msg();
         newmsg.setHeader("STUCK_RESOLVED");
         await client.say(id, newmsg)
@@ -419,7 +465,13 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         newmsg.setContent(content)
         await client.say(id, newmsg)
     } else if (msg.header === "STUCK_RESOLVED") {
-        me.stuckedFriend = false;
+        if (me.stuckedFriend) {
+            me.stuckedFriend = false;
+            myAgent.loop()
+            let newmsg = new Msg();
+            newmsg.setHeader("STUCK_RESOLVED");
+            await client.say(id, newmsg)
+        }
     } else if (msg.header === "MOVE_IN_ORDER_TO_UNSTUCK_ME") {
         const direction = msg.content.direction;
         await client.move(direction)
@@ -439,6 +491,31 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
         await client.say(id, newmsg)
     } else if (msg.header === "CURRENT_POSITION") {
         me.friendPosition = msg.content;
+    } else if (msg.header === "MOVE_OUT_OF_MY_PATH") {
+        const friendPath = msg.content.path;
+        const reachablePoints = grid.getReachablePoints(me.x, me.y)
+        const reachablePointsNotInFriendPath = []
+        for (let i = 0; i < reachablePoints.length; i++) {
+            let reachable = false;
+            for (let j = 0; j < friendPath.length; j++) {
+                if (reachablePoints[i].x === friendPath[j].x && reachablePoints[i].y === friendPath[j].y) {
+                    reachable = true;
+                    break;
+                }
+            }
+            if (!reachable) {
+                reachablePointsNotInFriendPath.push(reachablePoints[i])
+            }
+        }
+        if (reachablePointsNotInFriendPath.length !== 0) {
+            myAgent.push_priority_action("MOVE_OUT_OF_MY_PATH", reachablePointsNotInFriendPath[0], grid, me)
+            if(me.stuckedFriend){
+                me.stuckedFriend = false
+                myAgent.loop()
+            }
+        } else {
+            console.log("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRORRE")
+        }
     }
 }
 
@@ -446,7 +523,6 @@ async function handleMsg(id, name, msg, replyAcknowledgmentCallback) {
 client.onMsg(async (id, name, msg, replyAcknowledgmentCallback) => handleMsg(id, name, msg, replyAcknowledgmentCallback));
 
 // send a message to init the handshake
-
 client.onConnect(async () => {
     if (me.master) {
         let msg = new Msg();

@@ -18,6 +18,7 @@ class Me {
         this.stuckedFriend = false;
         this.strategy =  process.argv[4] || "default";
         this.splitMapZone = undefined
+        this.currentPath = undefined;
     }
 
     get number_of_parcels_carried() {

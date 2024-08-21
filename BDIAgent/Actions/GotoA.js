@@ -15,6 +15,7 @@ class GotoA extends Plan {
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
         const result = astar.search(graph, start, end);
+        me.currentPath = result;
 
         let time_before = Date.now();
 
@@ -30,7 +31,7 @@ class GotoA extends Plan {
             time_before = Date.now();
 
 
-            if (father_desire !== "SPLIT") {
+            if (father_desire === "go_put_down" || father_desire === "go_pick_up" || father_desire === "random_move" ) {
                 const best = intentionRevision.select_best_intention()
                 if (best.get_predicate() !== father_desire) {
                     throw ['FIND ANOTHER INTENTION ', x, y];
@@ -86,21 +87,22 @@ class GotoA extends Plan {
             if (!status_x && !status_y) {
                 const agentMap = grid.getAgentMap()
                 for (const agent of agentMap) {
-                    if (agent.x == x && agent.y == y) {
+                    if (agent.x == x && agent.y == y ) {
                         console.log('stucked with agent', agent.id);
-                        if (agent.id === me.friendId) {
+                        if (agent.id === me.friendId && me.name === "slave" && !me.stuckedFriend ) {
                             me.stuckedFriend = true
                             console.log('stucked with my Friend');
                             let msg = new Msg();
                             msg.setHeader("STUCKED_TOGETHER");
-                            msg.setContent(grid.getPossibleDirection(me.x, me.y));
+                            const content = { direction: grid.getPossibleDirection(me.x, me.y), path: result, reachablePoint: grid.getReachablePoints(me.x, me.y) }
+                            msg.setContent(content);
                             await client.say(me.friendId, msg);
                             break;
                         }
                         break;
                     }
                 }
-                console.log('stucked');
+                // console.log('stucked');
 
                 throw ['stucked', x, y];
             } else {
@@ -114,6 +116,18 @@ class GotoA extends Plan {
             // if some parcels are in the way, pick them up
             await client.pickup();
 
+        }
+
+        if (father_desire === "priority_action") {
+            let msg = new Msg();
+            msg.setHeader("STUCK_RESOLVED");
+            client.say(me.friendId, msg);
+        }else if(father_desire === "MOVE_OUT_OF_MY_PATH-priority_action"){
+            me.stuckedFriend = true;
+            let msg = new Msg();
+            msg.setHeader("STUCK_RESOLVED");
+            client.say(me.friendId, msg);
+            
         }
     }
 

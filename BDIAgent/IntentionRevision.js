@@ -16,6 +16,15 @@ const computeManhattanDistance = (start, end) => {
 class IntentionRevisionAgent {
     #grid;
     #me;
+    #running;
+
+    set running(value){
+        this.#running = value
+    }
+
+    get running(){
+        return this.#running;
+    }
 
     constructor(grid, me) {
         this.#grid = grid
@@ -218,17 +227,18 @@ class IntentionRevisionAgent {
 
     async loop() {
         let streak_stucked = 0;
+
+        if(this.running){
+            return;
+        }
+        
+        this.running = true;
         while (true) {
-            if (streak_stucked > 2) {
-                streak_stucked = 0;
-                this.#me.stuckedFriend = false;
-            }
+
 
             if (this.#me.stuckedFriend) {
-                new Promise(resolve => setTimeout(resolve, 1000));
-                streak_stucked++;
-                continue;
-
+                this.running = false;
+                break;
             }
 
             let intention;
@@ -237,6 +247,7 @@ class IntentionRevisionAgent {
             if (this.#priority_queue.length > 0) {
                 intention = this.#priority_queue[0];
                 priority_intention = true;
+                console.log("PRIORITY INTENTION", intention.predicate)
 
             } else {
                 // Consumes intention_queue if not empty
@@ -244,11 +255,11 @@ class IntentionRevisionAgent {
             }
 
             if (intention) {
-                if (intention.predicate === 'go_pick_up') {
-                    console.log("INTENTION", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
-                }else{
-                    console.log("INTENTION", intention.predicate)
-                }
+                // if (intention.predicate === 'go_pick_up') {
+                //     console.log("INTENTION", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
+                // }else{
+                //     console.log("INTENTION", intention.predicate)
+                // }
 
                 if (this.#me.friendId) {
                     if (intention.predicate !== 'random_move') {
@@ -312,12 +323,13 @@ class IntentionRevisionAgent {
 
 class IntentionRevisionRevise extends IntentionRevisionAgent {
 
-    async push_priority_action(predicate, ...args) {
-        let father_desire = "";
-        if (predicate === "go_to_astar") {
-            father_desire = "SPLIT"
+    async push_priority_action(predicate, ...args) {   
+        let father_desire = "priority_action"
+        if(predicate === "MOVE_OUT_OF_MY_PATH"){
+            predicate = "go_to_astar"
+            father_desire = "MOVE_OUT_OF_MY_PATH-priority_action"
         }
-        this.priority_queue.push(new Intention(this, "priority_action", predicate, ...args));
+        this.priority_queue.push(new Intention(this, father_desire, predicate, ...args));
     }
 
     async push(predicate, ...args) {
