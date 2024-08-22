@@ -1,4 +1,3 @@
-import BlindMove from "./Actions/BlindMove.js";
 import GoPickUp from "./Actions/GoPickUp.js";
 import GotoA from "./Actions/GotoA.js";
 import GoPutDown from "./Actions/GoPutDown.js";
@@ -15,7 +14,6 @@ configPromise.then((conf) => {
 });
 
 plans.push(new GoPickUp());
-plans.push(new BlindMove());
 plans.push(new GotoA());
 plans.push(new GoPutDown());
 plans.push(new RandomMove());
