@@ -3,15 +3,12 @@ import client from "./client.js";
 import Msg from "./Msg.js";
 import { astar, Graph } from './astar.js';
 import configPromise from './config.js';
+import { computeManhattanDistance } from "./utils.js";
 
 let config;
 configPromise.then((conf) => {
     config = conf;
 });
-
-const computeManhattanDistance = (start, end) => {
-    return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
-}
 
 class IntentionRevisionAgent {
     #grid;
@@ -100,46 +97,6 @@ class IntentionRevisionAgent {
         return parcels
     }
 
-    check_duplicate() {
-        const pos = new Array()
-        this.intention_queue.forEach((intention, index) => {
-            if (intention.predicate === 'go_pick_up') {
-                if (pos.includes(`${intention.get_args()[0].x},${intention.get_args()[0].y}`)) {
-                    console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-                } else {
-                    pos.push(`${intention.get_args()[0].x},${intention.get_args()[0].y}`)
-                }
-            }
-        })
-
-    }
-
-    clear_intention() {
-        // const pos = {}
-        // //create a new dictionary 
-
-        // this.intention_queue.forEach((intention, index) => {
-        //     if (intention.predicate === 'go_pick_up') {
-        //         const position = `${intention.get_args()[0].x},${intention.get_args()[0].y}`
-        //         if (Object.keys(pos).includes(position)) {
-        //             console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-        //             if ()
-        //         } else {
-        //             pos[]
-        //         }
-        //     }
-        // })
-        const now = Date.now();
-
-        // this.intention_queue = this.intention_queue.filter(intention => {
-        //     if(intention.predicate !== "go_pick_up"){
-        //         return true
-        //     }else{
-        //         if(now - intention.time < intention.get_args()[0].re)
-        //     }
-        // })
-    }
-
     remove(parcel) {
         this.intention_queue = this.intention_queue.filter(intention => {
             if (intention.predicate == 'go_pick_up') {
@@ -153,15 +110,12 @@ class IntentionRevisionAgent {
 
     select_best_intention() {
 
-
         const split_move = this.intention_queue.filter(intention => intention.predicate === 'go_to_astar');
         if (split_move.length > 0) {
             console.log("SPLIT MOVE")
             split_move[0].print()
             return split_move[0];
         }
-
-
 
         if (this.intention_queue.length == 0) {
             if (this.me.number_of_parcels_carried > 0) {
@@ -173,7 +127,7 @@ class IntentionRevisionAgent {
         const go_put_down_intention = new Intention(this, "", 'go_put_down', this.grid, this.grid.getDeliverPoints(), this.me);
 
         if (isNaN(this.me.pointLossInOneSecond)) {
-            // if the pointLossInOneSecond is NaN the agent can be stuck in a infinite pickup 
+            // if the pointLossInOneSecond is NaN(so the reward dose not decay) the agent can be stuck in a infinite pickup 
             // in order to avoid it when it has reached 10 parcels go to put down it 
             if (this.me.number_of_parcels_carried > 10) {
                 return go_put_down_intention
@@ -201,6 +155,7 @@ class IntentionRevisionAgent {
 
                 if (this.me.friendId) {
                     if (this.me.friendIntention && this.me.friendPosition) {
+                        // considering the intention of my friend I compute the distance between 
                         if (this.me.friendIntention.predicate === 'go_pick_up' && this.me.friendIntention.args[0].id === intention.get_args()[0].id) {
                             const graph = new Graph(this.#grid.getMap());
                             let start = graph.grid[Math.floor(this.me.x)][Math.floor(this.me.y)];
@@ -208,14 +163,9 @@ class IntentionRevisionAgent {
                             const myDistance = astar.search(graph, start, end).length;
                             start = graph.grid[Math.floor(this.me.friendPosition.x)][Math.floor(this.me.friendPosition.y)];
                             const friendDistance = astar.search(graph, start, end).length;
-                            // console.log("FRIEND POSITION", this.me.friendPosition.x, this.me.friendPosition.y)
                             if (friendDistance < myDistance) {
-                                // console.log("NOT CONSIDERING", intention.get_args()[0].id)
                                 return false;
-                            } else {
-                                // console.log("CONSIDERING I'M NEAR " , myDistance, "-", friendDistance)
                             }
-
                         }
                     }
                 }
@@ -223,9 +173,9 @@ class IntentionRevisionAgent {
                 let time_now = Date.now();
                 let parcel = intention.get_args()[0];
                 const stepInOneSecond = 1000 / this.me.movementDuration;
-                // TODO sicuro si può migliorare questa parte
                 // valid parcel
-                // get the current reward
+                // get the current reward, becasue the reward saved inside the parcel is the reward that there was when the parcel was seen
+                // now the reward it's decayed so we need to calculate the actual reward
                 let reward
                 // if there is a pointLossInOneSecond calculate how much is the actual reward of the parcels
                 if (isNaN(this.me.pointLossInOneSecond)) {
@@ -275,16 +225,14 @@ class IntentionRevisionAgent {
     }
 
     async loop() {
-        let streak_stucked = 0;
 
         if (this.running) {
             return;
         }
 
+        // flag that indicates that the agent is running, and avoid that the loop starts two times
         this.running = true;
         while (true) {
-
-            this.clear_intention()
 
             if (this.#me.stuckedFriend) {
                 this.running = false;
@@ -307,7 +255,6 @@ class IntentionRevisionAgent {
             if (intention) {
                 if (intention.predicate === 'go_pick_up') {
                     if(this.parcel_taken.includes(intention.get_args()[0].id)){
-                        console.log("AIUTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
                         continue;
                     }
                     console.log("INTENTION", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
@@ -337,6 +284,7 @@ class IntentionRevisionAgent {
                             console.log("Stopped intention:", intention.predicate, intention.get_args()[0].id, "x-y:", intention.get_args()[0].x, "-", intention.get_args()[0].y)
                         }
                     }).finally(() => {
+                        // if the intention was completed without stopping it, remove it from the intention queue, notify our friend 
                         if (!intention.stopped) {
 
                             // Remove intention from queue
@@ -397,25 +345,10 @@ class IntentionRevisionRevise extends IntentionRevisionAgent {
         this.intention_queue.push(intention);
 
     }
-    // method used in order to erase an intention of pick up, is used when a friend say that he has already picked up that parcel
+    // method used in order to avoid an intention of pick up, is used when a friend say that he has already picked up that parcel
     async erase(intention) {
         this.parcels_picked_up_by_friend.push(intention.args[0].id);
-        // console.log("ERASED INTENTION", intention.args[0].id)
 
-        // this.intention_queue = this.intention_queue.filter(i => {
-
-        //     if (intention.predicate !== 'go_pick_up') {
-        //         return true;
-        //     } else {
-        //         if (intention.args[0].id !== i.get_args()[0].id) {
-        //             return true;
-        //         } else {
-        //             console.log("ERASED INTENTION", intention.args[0].id)
-        //             return false;
-        //         }
-        //     }
-        // }
-        // );
     }
 
 }

@@ -46,8 +46,6 @@ class Grid {
 
     setAgent(id, x, y, time) {
         this.#agentMap[id] = { id: id, x: x, y: y, time: time };
-        // this.#agentMap = this.#agentMap.filter(agent => agent.id !== id);
-        // this.#agentMap.push({ id: id, x: x, y: y, time: time });
     }
 
     getAgentMap() {
@@ -55,7 +53,6 @@ class Grid {
         for (let key in this.#agentMap) {
             returnArray.push(this.#agentMap[key]);
         }
-
         return returnArray;
     }
 
@@ -73,8 +70,6 @@ class Grid {
         });
 
         // For each agent, update the cell weight
-
-
         const grid = this.#map;
         grid.forEach((row, x) => {
             row.forEach((cell, y) => {
@@ -161,10 +156,12 @@ class Grid {
 
     getPossibleDirection(x, y) {
 
+        // this method returns the possible directions wher an agent can go from a given point
+
         const tmpAgentMap = this.getAgentMap();
 
         const now = Date.now();
-
+        // calculate possible direction from a given point, looking wall and tile
         let directions = [];
         if (x > 0 && this.get(x - 1, y) !== undefined && this.get(x - 1, y) !== 0) {
             directions.push({ x: x - 1, y: y, name: "left" });
@@ -179,6 +176,7 @@ class Grid {
             directions.push({ x: x, y: y + 1, name: "up" });
         }
 
+        // remove direction where there is an agent
         const realDirections = [];
         for (let i = 0; i < directions.length; i++) {
             let free = true

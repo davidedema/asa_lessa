@@ -108,6 +108,7 @@ class GotoA extends Plan {
             msg.setHeader("STUCK_RESOLVED");
             client.say(me.friendId, msg);
         }else if(father_desire === "MOVE_OUT_OF_MY_PATH-priority_action"){
+            // notify our friend that we have complete the action in order to move our self out of his path, so he can move
             me.stuckedFriend = true;
             let msg = new Msg();
             msg.setHeader("STUCK_RESOLVED");
