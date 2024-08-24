@@ -133,7 +133,7 @@ class Intention {
         if (isNaN(pointLossInOneSecond)) {
             reward = parcel.reward;
         } else {
-            reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) *  pointLossInOneSecond / stepInOneSecond));
+            reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) *  pointLossInOneSecond ));
         }
 
         const me = this.#args[2];

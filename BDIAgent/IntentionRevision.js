@@ -181,7 +181,7 @@ class IntentionRevisionAgent {
                 if (isNaN(this.me.pointLossInOneSecond)) {
                     reward = parcel.reward
                 } else {
-                    reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * this.me.pointLossInOneSecond / stepInOneSecond));
+                    reward = Math.floor(parcel.reward - (((time_now - parcel.time) / 1000) * this.me.pointLossInOneSecond ));
                 }
                 // for now we are not interested since we don't gain any point
                 if (reward <= 3) {

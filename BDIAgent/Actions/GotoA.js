@@ -42,6 +42,11 @@ class GotoA extends Plan {
                         throw ['FIND ANOTHER INTENTION ', best.get_predicate(),best.get_args()[0]];
                     }
                 }
+                if(father_desire === "go_put_down"){
+                    if(me.number_of_parcels_carried === 0){
+                        throw ['STOP PUT DOWN', x, y];
+                    }
+                }
             }
 
             x = result[i].x;
