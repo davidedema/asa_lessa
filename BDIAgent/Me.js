@@ -1,3 +1,7 @@
+/**
+ * This class contains all the information about the current agent
+ * All these informations are necessary for the algorithm
+ */
 class Me {
     constructor() {
         this.id = undefined;

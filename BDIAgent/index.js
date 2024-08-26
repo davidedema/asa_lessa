@@ -8,6 +8,7 @@ import { handleMsg } from "./handleMsg.js"
 var grid = undefined;
 var me = new Me();
 
+// Update Me objet with the values received from the server
 client.onYou(({ id, name, x, y, score }) => {
     me.setValues({ id, name, x, y, score });
     myAgent.me = me;
@@ -20,9 +21,10 @@ const myAgent = new IntentionRevisionRevise(grid, me);
 myAgent.loop();
 
 /**
- * BDI loop
-*/
-
+ * This function is the main loop of the agent, it is called every time the agent perceives a parcel
+ * @param {Parcel} perceived_parcels - the perceived parcels
+ * @returns 
+ */
 function agentLoop(perceived_parcels) {
 
     const parcelsToNotify = []
@@ -73,7 +75,10 @@ function agentLoop(perceived_parcels) {
     }
 
 }
-
+/**
+ * This function is called every time the agent perceives other agents in the environment
+ * @param {agents} perceived_agents - List of perceived agents 
+ */
 async function agentPerception(perceived_agents) {
     const timeSeen = Date.now();
 
@@ -101,7 +106,7 @@ client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels
 
 client.onAgentsSensing(async (perceived_agents) => agentPerception(perceived_agents));
 
-
+// Set up the grid with the map received from the server
 client.onMap((height, width, map) => {
     grid = new Grid(width, height);
     for (const { x, y, delivery } of map) {
@@ -118,7 +123,7 @@ client.onMap((height, width, map) => {
     myAgent.grid = grid;
 });
 
-
+// Set up the agent with the configuration received from the server
 client.onConfig((config) => {
     if (config.PARCEL_DECADING_INTERVAL != 'infinite') {
         // from string to int
@@ -134,10 +139,10 @@ client.onConfig((config) => {
 });
 
 
-// Essendo un architettura master-slave, il master inizializza la comunicazione, il slave risponde
+// Function used to handle the messages received from the server
 client.onMsg(async (id, name, msg, replyAcknowledgmentCallback) => handleMsg(id, name, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents));
 
-// send a message to init the handshake
+// send a message to init the handshake with the other agent
 client.onConnect(async () => {
     if (me.master) {
         let msg = new Msg();

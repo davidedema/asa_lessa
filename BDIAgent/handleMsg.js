@@ -1,8 +1,10 @@
 import Msg from './Msg.js';
 import { areStuckedInACLosedPath, getOppositeDirection } from "./utils.js";
 
+// This function is used in order to handle the communication between agents
 
-export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents) {
+
+export async function handleMsg(id, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents) {
     // finalize the handshake
     if (msg.header == 'HANDSHAKE') {
         if (!me.master && msg.content == 'acquarium?') {
@@ -22,6 +24,8 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
             msg.setHeader("START_JOB");
             msg.setContent({ x: me.x, y: me.y });
             await client.say(id, msg, replyAcknowledgmentCallback);
+
+            // if we use the split map stragey, apply it
             if (me.strategy === "split_map") {
                 console.log("Split Map Strategy")
                 msg = new Msg();
@@ -65,7 +69,7 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
         }
     }
 
-    // exchange informations
+    //* Exchange informations
     // parcels
     if (msg.header === 'INFO_PARCELS') {
         // see content and update the parcels if not already present
@@ -80,7 +84,7 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
         for (const option of options) {
             myAgent.push(option.desire, ...option.args)
         }
-
+    // Agents
     } else if (msg.header === 'INFO_AGENTS') {
         let perceived_agents = msg.content;
 
@@ -90,6 +94,7 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
                 grid.setAgent(agent.id, agent.x, agent.y, Date.now())
             }
         }
+    // Want to do the split map strategy
     } else if (msg.header === "SPLIT_MAP") {
         me.setSplitMapZone(msg.content)
         const zone = msg.content;
@@ -118,6 +123,8 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
         me.friendIntention = msg.content
     } else if (msg.header === "COMPLETED_INTENTION") {
         myAgent.erase(msg.content)
+
+    // if we are stucked together
     } else if (msg.header === "STUCKED_TOGETHER" && me.name === "master") {
 
         // basic idea:
@@ -294,7 +301,7 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
                 myAgent.loop()
             }
         } else {
-            console.log("ERRORE")
+            console.log("ERROR")
         }
     }
 }

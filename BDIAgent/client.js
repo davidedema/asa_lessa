@@ -4,13 +4,14 @@ dotenv.config();
 
 var token;
 
-    if (process.argv[3] === 'master') {
-        token = process.env.CLIENT_TOKEN_MASTER;
-    } else if (process.argv[3] === 'slave') {
-        token = process.env.CLIENT_TOKEN_SLAVE;
-    } else {
-        token = process.env.CLIENT_TOKEN;
-    }
+// Read the CLI args and set the mode
+if (process.argv[3] === 'master') {
+    token = process.env.CLIENT_TOKEN_MASTER;
+} else if (process.argv[3] === 'slave') {
+    token = process.env.CLIENT_TOKEN_SLAVE;
+} else {
+    token = process.env.CLIENT_TOKEN;
+}
 
 const client = new DeliverooApi(
     'http://localhost:8080',

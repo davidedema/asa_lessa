@@ -1,3 +1,6 @@
+/**
+ * Message class, it has an header the contend and is also possible to set the sender info inside the message
+ */
 class Msg {
     constructor() {
         this.header = undefined;

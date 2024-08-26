@@ -9,7 +9,14 @@ class GoPutDown extends Plan {
     isApplicableTo(desire) {
         return desire == this.#desire;
     }
-
+    /**
+     * 
+     * @param {float} x - the x coordinate of the agent 
+     * @param {float} y - the y coordinate
+     * @param {Graph.grid} grid - the environment grid
+     * @param {Array} deliveryPoints - the possible delivery points
+     * @returns the closest delivery point wrt the agent
+     */
     findClosestDeliveryPoint(x, y, grid, deliveryPoints) {
         const graph = new Graph(grid);
         const start = graph.grid[x][y];
@@ -38,6 +45,8 @@ class GoPutDown extends Plan {
     async execute(intentionRevision,father_desire,grid, deliveryPoints, me) {
         if (me.number_of_parcels_carried != 0 || father_desire === "priority_action") {
             const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
+
+            // Check if using PDDL
             if (me.pddl) {
                 await this.subIntention(intentionRevision,this.#desire,'pdll_move', deliverPoint, grid, me);
             }
@@ -50,6 +59,7 @@ class GoPutDown extends Plan {
                 }
             }
             await client.putdown()
+            // Reset counter of carried parcels
             me.number_of_parcels_carried = 0;
         }
         else {

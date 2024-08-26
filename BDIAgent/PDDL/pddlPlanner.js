@@ -1,32 +1,32 @@
-import { Beliefset, onlineSolver, PddlExecutor, PddlProblem } from "@unitn-asa/pddl-client";
-
-import fs from 'fs';
-
-function readFile ( path ) {
-    
-    return new Promise( (res, rej) => {
-
-        fs.readFile( path, 'utf8', (err, data) => {
-            if (err) rej(err)
-            else res(data)
-        })
-
-    })
-
-}
-
+/**
+ * Class that creates a PDDL problem from a map and two points
+ */
 class PDDLPlanner {
+
+    /**
+     * 
+     * @param {Grid} map - the map of the environment
+     * @param {Graph.grid} from - the starting point 
+     * @param {Graph.grid} to - the ending point
+     */
     constructor(map, from, to) {
         this.map = map;
         this.from = map.ids[from.x][from.y];
         this.to = map.ids[to.x][to.y];
     }
 
+    /**
+     * Creates the PDDL problem file
+     * @returns {String} the problem in PDDL format
+     */
     async getProblem() {
         await this.createProblem();
         return this.problem_str + this.domain_str + this.objects_str + this.initState + this.goalState;
     }
 
+    /**
+     * Builds the PDDL problem with the given map and points
+     */
     async createProblem() {
         this.problem_str = '(define (problem deliverooP) '
         this.domain_str = '(:domain deliveroojs) ';
@@ -51,6 +51,10 @@ class PDDLPlanner {
         this.goalState = `(:goal (at ${this.to})) )`; //last parenthesis is for the problem-
     }
 
+    /**
+     * Computes the predicates and facts of the map 
+     * @returns {Object} - the predicates and facts of the map
+     */
     async computePredicatesAndFacts() {
         // create the facts
         let facts = new Set();

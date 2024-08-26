@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "bdi": "node BDIAgent/index.js astar",
     "bdi_pddl": "node BDIAgent/index.js pddl",
     "bdi_pddl_master": "node BDIAgent/index.js pddl master",
     "bdi_pddl_slave": "node BDIAgent/index.js pddl slave",
@@ -14,8 +14,7 @@
     "bdi_slave_split_map" : "node BDIAgent/index.js astar slave split_map",
     "bdi_master_split_map" : "node BDIAgent/index.js astar master split_map",
     "bdi_master_passing" : "node BDIAgent/index.js astar master passing",
-    "bdi_slave_passing" : "node BDIAgent/index.js astar slave passing",
-    "bdi": "node BDIAgent/index.js"
+    "bdi_slave_passing" : "node BDIAgent/index.js astar slave passing"
   },
   "repository": {
     "type": "git",

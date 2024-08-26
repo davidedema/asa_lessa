@@ -1,7 +1,9 @@
+
+/**
+ * Helper class in order to save the map of the environment
+ * The map is an array of number in which 1 is a deliver tile, 2 is normal tile and 0 is a wall
+ */
 class Grid {
-    /**
-     * MAP SE 1 deliver, 2 normale 0 muro
-     */
 
     #map;
     #deliverPoints = [];
@@ -31,7 +33,6 @@ class Grid {
 
     setIds() {
         // use this.ids and gives a alphabetic id for each tile
-        // TODO MAP IS CREATED NOT GOOD
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
                 // not wall
@@ -62,7 +63,6 @@ class Grid {
 
     getMap() {
 
-
         let tmpAgentMap = this.getAgentMap();
         // Filter and remove agents that haven't been seen for 10 seconds
         tmpAgentMap = tmpAgentMap.filter(agent => {
@@ -78,16 +78,6 @@ class Grid {
                 }
             })
         })
-
-        // this.#agentMap.forEach(agent => {
-        //     // console.log(agent.x, agent.y)
-        //     if( Date.now() - agent.time + 1 < 0){
-        //         throw new Error("NEGATIVE TIME")
-        //     }
-        //     grid[parseInt(agent.x)][parseInt(agent.x)] = Date.now() - agent.time + 1;
-        //     // console.log("AGENTE",agent.x, agent.y,Date.now(), agent.time, Date.now() - agent.time)
-        // });
-
 
         return grid;
     }
@@ -106,6 +96,12 @@ class Grid {
         }
     }
 
+    /**
+     * 
+     * @param {float} startX - Coordinate x of the agent
+     * @param {float} startY - Coordinate y of the agent 
+     * @returns if reachable 
+     */
     getReachablePoints(startX, startY) {
 
         // these method returns the reachable points from a given point
@@ -154,6 +150,12 @@ class Grid {
         return reachable;
     }
 
+    /**
+     * 
+     * @param {float} x - Coordinate x of the agent 
+     * @param {float} y - Coordinate y of the agent 
+     * @returns possible direction of the agent
+     */
     getPossibleDirection(x, y) {
 
         // this method returns the possible directions wher an agent can go from a given point
@@ -181,7 +183,6 @@ class Grid {
         for (let i = 0; i < directions.length; i++) {
             let free = true
             for (let j = 0; j < tmpAgentMap.length; j++) {
-                // if( tmpAgentMap[j].x === directions[i].x &&  tmpAgentMap[j].y === directions[i].y && now -  tmpAgentMap[j].time < 2000){
                 if (tmpAgentMap[j].x === directions[i].x && tmpAgentMap[j].y === directions[i].y) {
                     free = false;
                     break;
