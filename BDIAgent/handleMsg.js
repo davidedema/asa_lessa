@@ -1,7 +1,7 @@
 import Msg from './Msg.js';
 import { areStuckedInACLosedPath, getOppositeDirection } from "./utils.js";
 
-
+// This function is used in order to handle the communication between agents
 export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents) {
     // finalize the handshake
     if (msg.header == 'HANDSHAKE') {
@@ -22,6 +22,7 @@ export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, 
             msg.setHeader("START_JOB");
             msg.setContent({ x: me.x, y: me.y });
             await client.say(id, msg, replyAcknowledgmentCallback);
+            // if we use the split map stragey, apply it
             if (me.strategy === "split_map") {
                 console.log("Split Map Strategy")
                 msg = new Msg();

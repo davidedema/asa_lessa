@@ -123,7 +123,13 @@ class Intention {
         else
             console.log(...args)
     }
-
+    /**
+     * Function used to get the current utility of the agent
+     * @param {int} num_parcels_carried - number of parcels carried
+     * @param {int} movementDuration - how long the agent takes in order to make a move  
+     * @param {Coord} _start - possible starting point 
+     * @returns 
+     */
     get_utility(num_parcels_carried,movementDuration, _start = null) {
         let time_now = Date.now();
         const parcel = this.#args[0];
@@ -161,9 +167,10 @@ class Intention {
         const delivery_result = astar.search(graph, end, deliveryPoint);
         let deliery_path_length = delivery_result.length;
 
-        // utility = reward - (quanto decade il reward della parcella interessata mentre sto andando a prenderla)
-        //            - (punti che decadono riguardanti le parcelle che sto gia traspoartando mentre vado a prendere la nuova parcella)
-        //           - (punti che decadono riguardanti le parcelle che sto gia traspoartando e quella nuova mentre vado a consegnare la nuova parcella)
+        // utility is calculated as:
+        // reward - (how much the reward decays when im going to pick it up)
+        //        - (how much the reward of the carried parcels decay when im going to pick up the other parcel)
+        //        - (how much the reward of the carried parcels and the new one decay when im going to put them down)
         let utility;
         if (isNaN(pointLossInOneSecond)) {
             // distance cost is a small number that enables to give the right priority to the parcels that are near to the agent

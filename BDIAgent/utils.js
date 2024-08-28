@@ -11,7 +11,11 @@ export function areStuckedInACLosedPath(directions1, directions2) {
         return false;
     }
 }
-
+/**
+ * 
+ * @param {string} direction - the actual direction
+ * @returns The opposite direction
+ */
 export function getOppositeDirection(direction) {
     if (direction === "up") {
         return "down";

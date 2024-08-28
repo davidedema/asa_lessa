@@ -1,3 +1,4 @@
+; Deliveroo JS domain
 (define (domain deliveroojs)
 
     (:requirements :strips :typing :disjunctive-preconditions)

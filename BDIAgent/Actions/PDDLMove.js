@@ -15,15 +15,15 @@ class PDDLMove extends Plan {
         const graph = new Graph(grid.getMap());
         const start = graph.grid[Math.floor(me.x)][Math.floor(me.y)];
         const end = graph.grid[x][y];
-
+        // Build the PDDL problem and read the domain
         const planner = new PDDLPlanner(grid, start, end);
         const problem = await planner.getProblem();
         const domain =fs.readFileSync('/home/davide/Desktop/asa_lessa/BDIAgent/PDDL/domain.pddl', 'utf8').replace(/\r?\n|\r/g, '').replace(/\s\s+/g, ' ');
 
         console.log("Sending to remote planner");
-
+        // Get the plan by the online solver 
         var plan = await onlineSolver(domain, problem);
-
+        // Intention revision
         const best = intentionRevision.select_best_intention()
         if (best.get_predicate() != father_desire && father_desire == 'go_put_down') {
             throw ['FIND ANOTHER INTENTION ', x, y];
@@ -33,7 +33,7 @@ class PDDLMove extends Plan {
                 throw ['FIND ANOTHER INTENTION ', x, y];
             }
         }
-
+        // execute the plan
         if ( plan ) {
             for (let i = 0; i < plan.length; i++) {
 
