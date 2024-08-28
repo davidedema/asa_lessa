@@ -1,4 +1,3 @@
-
 /**
  * Helper class in order to save the map of the environment
  * The map is an array of number in which 1 is a deliver tile, 2 is normal tile and 0 is a wall
@@ -78,6 +77,7 @@ class Grid {
                 }
             })
         })
+
 
         return grid;
     }

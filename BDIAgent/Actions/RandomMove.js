@@ -6,8 +6,7 @@ class RandomMove extends Plan {
         return desire == 'random_move';
     }
 
-    async execute(intentionRevision, father_desire, grid, me) {
-
+    async execute(intentionRevision,father_desire,grid, me) {
         // Get the possible spawn point for the parcels
         let destination = grid.getSpawnPoints();
         // Checl if strategy is present
@@ -20,7 +19,7 @@ class RandomMove extends Plan {
                 }
             });
         }
-        // Select random tile
+        // Get a random index
         const randomIndex = Math.floor(Math.random() * destination.length);
         const { x, y } = destination[randomIndex];
         await this.subIntention(intentionRevision, "random_move", 'go_to_astar', { x, y }, grid, me);

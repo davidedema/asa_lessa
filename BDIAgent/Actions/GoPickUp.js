@@ -9,7 +9,7 @@ class GoPickUp extends Plan {
         return desire == this.#desire;
     }
 
-    async execute(intentionRevision,{ x, y }, father_desire, grid, me) {
+    async execute(intentionRevision,father_desire,{ x, y }, grid, me) {
         // Check if using PDDL or not
         if (me.pddl) {
             await this.subIntention(intentionRevision,this.#desire,'pdll_move', { x, y }, grid, me);

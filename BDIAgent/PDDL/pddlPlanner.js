@@ -18,7 +18,6 @@ function readFile ( path ) {
  * Class that creates a PDDL problem from a map and two points
  */
 class PDDLPlanner {
-
     /**
      * 
      * @param {Grid} map - the map of the environment
@@ -30,7 +29,6 @@ class PDDLPlanner {
         this.from = map.ids[from.x][from.y];
         this.to = map.ids[to.x][to.y];
     }
-
     /**
      * Creates the PDDL problem file
      * @returns {String} the problem in PDDL format
@@ -39,7 +37,6 @@ class PDDLPlanner {
         await this.createProblem();
         return this.problem_str + this.domain_str + this.objects_str + this.initState + this.goalState;
     }
-
     /**
      * Builds the PDDL problem with the given map and points
      */
@@ -66,7 +63,6 @@ class PDDLPlanner {
         // add goal
         this.goalState = `(:goal (at ${this.to})) )`; //last parenthesis is for the problem-
     }
-
     /**
      * Computes the predicates and facts of the map 
      * @returns {Object} - the predicates and facts of the map

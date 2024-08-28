@@ -25,6 +25,7 @@ myAgent.loop();
  * @param {Parcel} perceived_parcels - the perceived parcels
  * @returns 
  */
+
 function agentLoop(perceived_parcels) {
 
     const parcelsToNotify = []
@@ -75,6 +76,7 @@ function agentLoop(perceived_parcels) {
     }
 
 }
+
 /**
  * This function is called every time the agent perceives other agents in the environment
  * @param {agents} perceived_agents - List of perceived agents 
@@ -105,6 +107,7 @@ async function agentPerception(perceived_agents) {
 client.onParcelsSensing(async (perceived_parcels) => agentLoop(perceived_parcels));
 
 client.onAgentsSensing(async (perceived_agents) => agentPerception(perceived_agents));
+
 
 // Set up the grid with the map received from the server
 client.onMap((height, width, map) => {

@@ -10,7 +10,6 @@ class GotoA extends Plan {
     }
 
     async execute(intentionRevision, father_desire, { x, y }, grid, me) {
-
         // In this function a path is found using the A* algorithm and than the 
         // agent start executing the movement
 
@@ -57,7 +56,7 @@ class GotoA extends Plan {
             let status_x = undefined;
             let status_y = undefined;
 
-            // movement part
+            // movement
             if (x > me.x)
                 status_x = await client.move('right')
             else if (x < me.x)
@@ -77,7 +76,6 @@ class GotoA extends Plan {
                 me.x = status_y.x;
                 me.y = status_y.y;
             }
-
             // if stucked compute the possible options
             if (!status_x && !status_y) {
                 const agentMap = grid.getAgentMap()

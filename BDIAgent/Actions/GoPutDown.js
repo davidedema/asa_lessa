@@ -45,7 +45,6 @@ class GoPutDown extends Plan {
     async execute(intentionRevision,father_desire,grid, deliveryPoints, me) {
         if (me.number_of_parcels_carried != 0 || father_desire === "priority_action") {
             const deliverPoint = this.findClosestDeliveryPoint(me.x, me.y, grid.getMap(), deliveryPoints);
-
             // Check if using PDDL
             if (me.pddl) {
                 await this.subIntention(intentionRevision,this.#desire,'pdll_move', deliverPoint, grid, me);

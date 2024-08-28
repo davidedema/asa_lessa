@@ -11,7 +11,6 @@ export function areStuckedInACLosedPath(directions1, directions2) {
         return false;
     }
 }
-
 /**
  * 
  * @param {string} direction - the actual direction
