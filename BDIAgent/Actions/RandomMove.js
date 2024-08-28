@@ -6,7 +6,7 @@ class RandomMove extends Plan {
         return desire == 'random_move';
     }
 
-    async execute(intentionRevision,grid, me) {
+    async execute(intentionRevision, father_desire, grid, me) {
 
         // Get the possible spawn point for the parcels
         let destination = grid.getSpawnPoints();

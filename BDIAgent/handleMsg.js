@@ -4,7 +4,7 @@ import { areStuckedInACLosedPath, getOppositeDirection } from "./utils.js";
 // This function is used in order to handle the communication between agents
 
 
-export async function handleMsg(id, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents) {
+export async function handleMsg(id, name, msg, replyAcknowledgmentCallback, me, grid, client, myAgent, perceivedAgents) {
     // finalize the handshake
     if (msg.header == 'HANDSHAKE') {
         if (!me.master && msg.content == 'acquarium?') {

@@ -1,3 +1,19 @@
+import { Beliefset, onlineSolver, PddlExecutor, PddlProblem } from "@unitn-asa/pddl-client";
+
+import fs from 'fs';
+
+function readFile ( path ) {
+
+    return new Promise( (res, rej) => {
+
+        fs.readFile( path, 'utf8', (err, data) => {
+            if (err) rej(err)
+            else res(data)
+        })
+
+    })
+
+}
 /**
  * Class that creates a PDDL problem from a map and two points
  */

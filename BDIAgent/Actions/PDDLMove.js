@@ -1,5 +1,7 @@
 import Plan from "../Plan.js";
 import client from "../client.js";
+import { astar, Graph } from '../astar.js';
+import { onlineSolver, PddlExecutor, PddlProblem, Beliefset } from "@unitn-asa/pddl-client";
 import { Graph } from '../astar.js';
 import { onlineSolver } from "@unitn-asa/pddl-client";
 import { PDDLPlanner } from "../PDDL/pddlPlanner.js";
