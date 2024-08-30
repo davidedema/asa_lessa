@@ -77,6 +77,12 @@ In order to run the project you'll need to clone it and install the requirements
   ```
 
 ## Running the project
+First of all creates the `.env` file:
+```
+CLIENT_TOKEN_MAIN = "<Insert token here>"
+CLIENT_TOKEN_MASTER = "<Insert token here>"
+CLIENT_TOKEN_SLAVE = "<Insert token here>"
+```
 There are a few mode for running the project:
 Running in single agent scenario: 
 - bdi agent no PDDL
